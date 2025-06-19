@@ -7,8 +7,11 @@ function Footer() {
       <div className="container">
         <div className="copyright">
           <p className="mb-0">Ook een website nodig? Wij helpen je graag!</p>
-          <h3 className="mb-0">CoreTech</h3>
+          <h3 className="mb-0">Alafandi Consaltency</h3>
         </div>
+        <a href="/admin" className="admin-link">
+          Admin
+        </a>
       </div>
     </footer>
   )
