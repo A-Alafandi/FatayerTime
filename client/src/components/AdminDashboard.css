@@ -46,6 +46,33 @@
   object-fit: cover;
 }
 
+/* Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1060;
+}
+
+.modal-card {
+  background: #fff;
+  max-width: 500px;
+  width: 100%;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Small img preview */
+table img.img-thumbnail {
+  height: 60px;
+  width: auto;
+}
+
+
 .admin-dashboard .btn-danger {
   font-size: 0.875rem;
   padding: 4px 10px;
@@ -64,3 +91,10 @@
 .admin-dashboard .logout-btn:hover {
   background-color: #eee;
 }
+
+/* keep table header fixed width for action buttons */
+.table th:last-child,
+.table td:last-child { white-space: nowrap; }
+
+/* focus style */
+input:focus { box-shadow: 0 0 0 0.15rem rgba(13,110,253,.25); }

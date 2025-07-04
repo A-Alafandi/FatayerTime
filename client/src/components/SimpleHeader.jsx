@@ -1,7 +1,6 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import logo from '../assets/logo.svg'
-
 function SimpleHeader({ showHero = true, showButtons = true }) {
   const location = useLocation()
   return (
@@ -25,28 +24,12 @@ function SimpleHeader({ showHero = true, showButtons = true }) {
               Fatayer <span style={{ color: 'green' }}>Time</span>
             </h1>
           </a>
-
-          <nav id="navmenu" className="navmenu">
+          <nav id=" navmenu" className="  navmenu">
             <ul>
               <li>
-                <Link
-                  to="/"
-                  className={location.pathname === '/' ? 'active' : ''}
-                >
-                  Home
-                </Link>
-              </li>
-              <li>
-                <a href="#about">Over Ons</a>
-              </li>
-              <li>
-                <a href="#services">Diensten</a>
-              </li>
-              <li>
-                <a href="#contact-section">Contact</a>
+                <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
               </li>
             </ul>
-            <i className="mobile-nav-toggle d-xl-none bi bi-list"></i>
           </nav>
         </div>
       </header>

@@ -3,11 +3,11 @@ package com.fatayertime.backend.Service;
 
 import com.fatayertime.backend.Model.AppUser;
 import com.fatayertime.backend.Repository.UserRepository;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Bean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -30,4 +30,13 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .build();
     }
 
+    @Autowired
+    private PasswordEncoder encoder;
+
+//    @PostConstruct
+//    public void verifyHash() {
+//        String raw = "";
+//        String hash = ""; // Copy from your database
+//        System.out.println(encoder.matches(raw, hash)); // should print true
+//    }
 }

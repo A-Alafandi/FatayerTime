@@ -2,7 +2,9 @@ package com.fatayertime.backend.Controller;
 
 import com.fatayertime.backend.Model.MenuItem;
 import com.fatayertime.backend.Repository.MenuItemRepository;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -10,7 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/menu")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"http://localhost:3004", "https://fatayertime.com"})
 public class MenuItemController {
 
     private final MenuItemRepository repository;
@@ -24,17 +26,15 @@ public class MenuItemController {
         return repository.findAll();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public MenuItem create(@RequestBody MenuItem item) {
+    public MenuItem create(@Valid @RequestBody MenuItem item) {
         return repository.save(item);
     }
 
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        repository.deleteById(id);
-    }
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
-    public MenuItem update(@PathVariable Long id, @RequestBody MenuItem updatedItem) {
+    public MenuItem update(@PathVariable Long id, @Valid @RequestBody MenuItem updatedItem) {
         return repository.findById(id)
                 .map(existingItem -> {
                     existingItem.setName(updatedItem.getName());
@@ -45,5 +45,11 @@ public class MenuItemController {
                     return repository.save(existingItem);
                 })
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not found"));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) {
+        repository.deleteById(id);
     }
 }

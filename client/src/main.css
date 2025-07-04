@@ -10,7 +10,7 @@
   --background-color: #ffffff;
   --default-color: #d6d3cd;
   --heading-color: #000000;
-  --accent-color: #0d6efd;
+  --accent-color: #0dfd29;
   --surface-color: #1a1a1a;
   --contrast-color: #ffffff;
 }
@@ -664,79 +664,64 @@ h6 {
 }
 
 /* ---------------
-   FOOTER
+   FOOTER STYLES
    --------------- */
 footer {
-  background-color: #f9f9f9;
+  background-color: #212529; /* dark background */
   padding: 20px 0;
   text-align: center;
   font-size: 0.9rem;
-  color: #666;
+  color: #ccc;
 }
 
+footer h3 {
+  font-weight: 600;
+  margin-bottom: 0;
+  color: #fff;
+}
+
+footer .copyright span {
+  font-size: 1rem;
+  font-weight: 400;
+  color: #aaa;
+}
+
+/* ---------------
+   CREDIT IMAGES
+   --------------- */
 .credits img {
-  max-height: 30px;
-  /* margin-top: 5px; */
-}
-
-.credits a img {
+  height: 50px;
   transition: filter 0.3s ease-in-out;
-}
-
-.credits a img:hover {
-  filter: drop-shadow(0px 0px 10px rgba(255, 255, 255, 1));
+  animation: pulse 2s infinite ease-in-out;
 }
 
 .credits a img:hover {
   filter: drop-shadow(0px 0px 15px #eb4330) drop-shadow(0px 0px 30px #eb4330);
 }
 
+/* ---------------
+   PULSE ANIMATION
+   --------------- */
 @keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.03);
-  }
-  100% {
-    transform: scale(1);
-  }
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.03); }
+  100% { transform: scale(1); }
 }
 
-.credits a img {
-  animation: pulse 2s infinite ease-in-out;
-}
-footer {
-  background-color: #212529;
-}
-
-footer .copyright span {
-  font-size: 1rem;
-  font-weight: 400;
-}
-
-footer h3 {
-  font-weight: 600;
-  margin-bottom: 0;
-}
-
-footer .credits img {
-  height: 50px;
-}
-
+/* ---------------
+   OPTIONAL ADDITIONS
+   --------------- */
 .clickable-links:hover {
   text-decoration: underline;
   color: #28a745;
 }
 
-/* Optional: Add spacing to icons */
 .first-icon {
   font-size: 2rem;
   margin-bottom: 0.5rem;
   color: #28a745;
 }
 
-/* Optional: Better card spacing */
 .contact-card {
   margin-bottom: 20px;
 }
