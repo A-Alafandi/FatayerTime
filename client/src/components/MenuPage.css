@@ -139,6 +139,41 @@
   border: none;
   cursor: pointer;
 }
+body, html, #root {
+  height: 100%;
+}
+.page-container      { display:flex; flex-direction:column; min-height:100%; }
+.page-content        { flex:1; }
+
+/* section heading */
+.menu-section-title  {
+  font-weight:600;
+  font-size:1.5rem;
+  border-bottom:1px solid #ddd;
+  padding-bottom:.4rem;
+  margin-top:3rem;
+  margin-bottom:1.5rem;
+}
+
+.section-emoji {
+  font-size: 1.5rem;
+  margin-right: 0.5rem;
+}
+
+body, html, #root {
+  height: 100%;
+  margin: 0;
+}
+
+.page-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.page-content {
+  flex: 1;
+}
 
 @keyframes fadeIn {
   from {
