@@ -1,71 +1,83 @@
 package com.fatayertime.backend.Service;
 
+
 import com.fatayertime.backend.Model.AppUser;
 import com.fatayertime.backend.Model.RefreshToken;
 import com.fatayertime.backend.Repository.RefreshTokenRepository;
-import com.fatayertime.backend.Repository.UserRepository;
+import jakarta.annotation.PostConstruct;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class RefreshTokenService {
 
-    private final RefreshTokenRepository refreshTokenRepo;
-    private final UserRepository         userRepo;
+    private final RefreshTokenRepository refreshTokenRepository;
 
-    /* ─────────────── CREATE ─────────────── */
+    @Value("${app.jwt.refresh-token.expiration-ms}")
+    private Long refreshTokenExpirationMs;
 
-    /** Create a fresh 7-day token, replacing any existing one for this user. */
-    @Transactional
-    public String createToken(String username) {
-
-        AppUser user = userRepo.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        // remove any previous token for the same user
-        refreshTokenRepo.deleteByUser(user);
-
-        RefreshToken token = RefreshToken.builder()
-                .token(UUID.randomUUID().toString())
-                .user(user)
-                .expiryDate(Instant.now().plusSeconds(7 * 24 * 60 * 60)) // 7 days
-                .build();
-
-        refreshTokenRepo.save(token);
-        return token.getToken();
+    @PostConstruct
+    public void printTokenExpiryConfig() {
+        System.out.println("Refresh token expiration (ms): " + refreshTokenExpirationMs);
     }
-
-    /* ─────────────── VERIFY ─────────────── */
 
     /**
-     * Validate the given refresh-token string and return the entity.
-     * <br>
-     * NOTE: we **no longer delete** the row here – that prevents the
-     * “Row was updated or deleted by another transaction” race when two
-     * requests hit the endpoint almost simultaneously.
+     * Create or update a refresh token for the given user.
      */
-    @Transactional(readOnly = true)
-    public RefreshToken verify(String tokenValue) {
-
-        RefreshToken token = refreshTokenRepo.findByToken(tokenValue)
-                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
-
-        if (token.getExpiryDate().isBefore(Instant.now())) {
-
-            refreshTokenRepo.delete(token);
-            throw new RuntimeException("Expired refresh token");
-        }
-        return token;
+    @Transactional
+    public RefreshToken createToken(AppUser user) {
+        return refreshTokenRepository.findByUser(user)
+                .map(existingToken -> {
+                    existingToken.setToken(UUID.randomUUID().toString());
+                    existingToken.setExpiryDate(Instant.now().plusMillis(refreshTokenExpirationMs));
+                    return refreshTokenRepository.save(existingToken);
+                })
+                .orElseGet(() -> {
+                    RefreshToken token = new RefreshToken();
+                    token.setUser(user);
+                    token.setToken(UUID.randomUUID().toString());
+                    token.setExpiryDate(Instant.now().plusMillis(refreshTokenExpirationMs));
+                    return refreshTokenRepository.save(token);
+                });
+    }
+    /**
+     * Verifies the given refresh token: it must exist and not be expired.
+     *
+     * @param token the refresh token string
+     * @return the valid RefreshToken entity
+     * @throws RuntimeException if the token is invalid or expired
+     */
+    public RefreshToken verify(String token) {
+        return refreshTokenRepository.findByToken(token)
+                .filter(this::isTokenValid)
+                .orElseThrow(() -> new RuntimeException("Invalid or expired refresh token"));
     }
 
+    /**
+     * Validate whether a token is still valid (not expired).
+     */
+    public boolean isTokenValid(RefreshToken token) {
+        return token != null && token.getExpiryDate().isAfter(Instant.now());
+    }
 
-    @Transactional
+    /**
+     * Find token by its string value.
+     */
+    public Optional<RefreshToken> findByToken(String token) {
+        return refreshTokenRepository.findByToken(token);
+    }
+
+    /**
+     * Delete token by user.
+     */
     public void deleteByUser(AppUser user) {
-        refreshTokenRepo.deleteByUser(user);
+        refreshTokenRepository.deleteByUser(user);
     }
 }

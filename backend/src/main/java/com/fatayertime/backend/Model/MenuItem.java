@@ -19,6 +19,7 @@ public class MenuItem {
     private String category;
     private String imageUrl;
     private long price;
+    private boolean vegetarian;
 
 
     public MenuItem(String name, String description, String ingredients, String category, String imageUrl, long price) {

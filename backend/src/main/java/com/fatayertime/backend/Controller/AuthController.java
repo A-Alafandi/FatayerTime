@@ -1,9 +1,15 @@
 package com.fatayertime.backend.Controller;
 
 
+
+
+import com.fatayertime.backend.Config.JwtResponse;
 import com.fatayertime.backend.Config.JwtUtil;
+import com.fatayertime.backend.Model.AppUser;
 import com.fatayertime.backend.Model.RefreshToken;
 import com.fatayertime.backend.Repository.UserRepository;
+import com.fatayertime.backend.Request.LoginRequest;
+import com.fatayertime.backend.Service.CustomUserDetailsService;
 import com.fatayertime.backend.Service.RefreshTokenService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,6 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,7 +25,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
 
 import java.util.Map;
 
@@ -30,7 +39,7 @@ import java.util.Map;
 @RestController
 @Slf4j
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")   // ⇐ adjust for prod
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -40,20 +49,49 @@ public class AuthController {
     private final UserRepository userRepo;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthRequest req, HttpServletResponse res) {
-        Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(req.username(), req.password())
-        );
-        String accessToken  = jwtUtil.generateAccessToken(req.username());
-        String refreshToken = refreshTokenService.createToken(req.username());
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
+        try {
+            // 1. Authenticate
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getUsername(),
+                            loginRequest.getPassword()
+                    )
+            );
 
-        setCookieManually(res, "refresh", refreshToken, 7 * 24 * 60 * 60);
+            // 2. Get user details
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            AppUser user = userRepo.findByUsername(userDetails.getUsername())
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        return ResponseEntity.ok(Map.of("token", accessToken));
+            log.info("Successful login for user: {}", user.getUsername());
+
+            // 3. Generate tokens
+            RefreshToken refreshToken = refreshTokenService.createToken(user);
+            String accessToken = jwtUtil.generateAccessToken(user);
+
+            // 4. Set cookies
+            setRefreshTokenCookie(response, refreshToken.getToken());
+            setCookieManually(response, "accessToken", accessToken, 60 * 15); // 15 mins
+
+            // 5. Return response
+            return ResponseEntity.ok()
+                    .body(Map.of(
+                            "token", accessToken,
+                            "username", user.getUsername(),
+                            "role", user.getRole()
+                    ));
+
+        } catch (Exception ex) {
+            log.error("Login failed for {}: {}", loginRequest.getUsername(), ex.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Invalid credentials"));
+        }
     }
+
     @PostMapping("/refresh")
     public ResponseEntity<?> refresh(
-            @CookieValue(name = "refresh", required = false) String refreshCookie,
+            @CookieValue(name = "refreshToken", required = false) String refreshCookie,
             HttpServletRequest request,
             HttpServletResponse res
     ) {
@@ -64,30 +102,54 @@ public class AuthController {
 
         log.info("Incoming refresh cookie: {}", refreshCookie);
 
-        RefreshToken rt = refreshTokenService.verify(refreshCookie);
-        String newAccess = jwtUtil.generateAccessToken(rt.getUser().getUsername());
+        try {
+            RefreshToken rt = refreshTokenService.verify(refreshCookie);
+            AppUser user = rt.getUser();
 
-        setCookieManually(res, "access", newAccess, 60 * 15);
+            String newAccessToken = jwtUtil.generateAccessToken(user);
 
-        return ResponseEntity.ok(Map.of("token", newAccess));
+            // Optional: send new access token as a cookie (if needed)
+            setCookieManually(res, "accessToken", newAccessToken, 60 * 15);
+
+            return ResponseEntity.ok(Map.of("token", newAccessToken));
+
+        } catch (Exception e) {
+            log.error("Refresh token invalid: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token.");
+        }
     }
-    private void setCookieManually(HttpServletResponse res, String name, String value, int maxAgeSec) {
-        String cookie = String.format(
-                "%s=%s; Max-Age=%d; Path=/; Domain=localhost; HttpOnly; Secure; SameSite=None",
-                name, value, maxAgeSec
-        );
-        res.addHeader("Set-Cookie", cookie);
-    }
+
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@AuthenticationPrincipal UserDetails user, HttpServletResponse res) {
+    public ResponseEntity<String> logout(@AuthenticationPrincipal UserDetails user, HttpServletResponse res) {
         refreshTokenService.deleteByUser(userRepo.findByUsername(user.getUsername()).orElseThrow());
         Cookie cookie = new Cookie("refresh", null);
-        cookie.setMaxAge(0);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
-        cookie.setPath("/");
+        cookie.setPath("/api/auth"); // match your auth path
+        cookie.setMaxAge(0); // expire immediately
         res.addCookie(cookie);
         return ResponseEntity.ok().build();
     }
     public record AuthRequest(String username, String password) {}
+
+    private void setRefreshTokenCookie(HttpServletResponse response, String token) {
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", token)
+                .httpOnly(true)
+                .secure(false) // Enable in production
+                .path("/api/auth/refresh")
+                .maxAge(7 * 24 * 60 * 60) // 7 days
+                .sameSite("Lax")
+                .build();
+        response.addHeader("Set-Cookie", cookie.toString());
+    }
+    private void setCookieManually(HttpServletResponse response, String name, String value, int maxAgeSec) {
+        ResponseCookie cookie = ResponseCookie.from(name, value)
+                .httpOnly(false) // Accessible via JS
+                .secure(false)
+                .path("/")
+                .maxAge(maxAgeSec)
+                .sameSite("Lax")
+                .build();
+        response.addHeader("Set-Cookie", cookie.toString());
+    }
 }

@@ -1,39 +1,74 @@
 package com.fatayertime.backend.Config;
 
-import io.jsonwebtoken.*;
-import org.springframework.stereotype.Component;
-import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
 
-import java.security.Key;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 
-@Component
+@Service
 public class JwtUtil {
 
-    private static final String SECRET_KEY = "9c4850af085c648a32b732d4b674ca9f4e61f105a87fe6c4"; // min 256-bit
-
-    private final Key key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
-
-    public String generateAccessToken(String username) {
-        return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1h
-                .signWith(key)
-                .compact();
-    }
+    private final String SECRET_KEY = "super_secret_key_22228!";
 
     public String extractUsername(String token) {
-        return Jwts.parserBuilder().setSigningKey(key).build()
-                .parseClaimsJws(token).getBody().getSubject();
+        try {
+            return extractClaim(token, Claims::getSubject);
+        } catch (Exception e) {
+            System.out.println("❌ Failed to extract username from token: " + e.getMessage());
+            return null;
+        }
     }
 
-    public boolean validateToken(String token) {
-        try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-            return true;
-        } catch (JwtException e) {
-            return false;
+    public Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
+    }
+
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
+    }
+
+    private Claims extractAllClaims(String token) {
+        return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
+    }
+
+    private Boolean isTokenExpired(String token) {
+        return extractExpiration(token).before(new Date());
+    }
+
+    public String generateToken(UserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>();
+        return createToken(claims, userDetails.getUsername());
+    }
+
+    private String createToken(Map<String, Object> claims, String subject) {
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(subject)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
+                .signWith(SignatureAlgorithm.HS256, SECRET_KEY).compact();
+    }
+
+    public boolean validateToken(String token, UserDetails userDetails) {
+        String username = extractUsername(token);
+        boolean valid = username != null
+                && username.equals(userDetails.getUsername())
+                && !isTokenExpired(token);
+
+        if (!valid) {
+            System.out.println("❌ JWT validation failed:");
+            System.out.println("Token username: " + username);
+            System.out.println("Expected username: " + userDetails.getUsername());
+            System.out.println("Expired? " + isTokenExpired(token));
         }
+
+        return valid;
     }
 }

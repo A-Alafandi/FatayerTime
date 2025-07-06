@@ -1,55 +1,47 @@
 package com.fatayertime.backend.Controller;
 
 import com.fatayertime.backend.Model.MenuItem;
-import com.fatayertime.backend.Repository.MenuItemRepository;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
+import com.fatayertime.backend.Service.MenuItemService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/menu")
-@CrossOrigin(origins = {"http://localhost:3004", "https://fatayertime.com"})
 public class MenuItemController {
 
-    private final MenuItemRepository repository;
+    private final MenuItemService menuItemService;
 
-    public MenuItemController(MenuItemRepository repository) {
-        this.repository = repository;
+    public MenuItemController(MenuItemService menuItemService) {
+        this.menuItemService = menuItemService;
     }
 
+    // Public access (anyone can see the menu)
     @GetMapping
-    public List<MenuItem> getAll() {
-        return repository.findAll();
+    public List<MenuItem> getMenu() {
+        System.out.println("GET /api/menu called");
+        return menuItemService.getAllMenuItems();
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    // Admin only: Add a menu item
     @PostMapping
-    public MenuItem create(@Valid @RequestBody MenuItem item) {
-        return repository.save(item);
+    @PreAuthorize("hasRole('ADMIN')")
+    public MenuItem addMenuItem(@RequestBody MenuItem item) {
+        return menuItemService.addMenuItem(item);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/{id}")
-    public MenuItem update(@PathVariable Long id, @Valid @RequestBody MenuItem updatedItem) {
-        return repository.findById(id)
-                .map(existingItem -> {
-                    existingItem.setName(updatedItem.getName());
-                    existingItem.setPrice(updatedItem.getPrice());
-                    existingItem.setImageUrl(updatedItem.getImageUrl());
-                    existingItem.setIngredients(updatedItem.getIngredients());
-                    existingItem.setDescription(updatedItem.getDescription());
-                    return repository.save(existingItem);
-                })
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not found"));
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
+    // Admin only: Delete a menu item
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        repository.deleteById(id);
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteMenuItem(@PathVariable Long id) {
+        menuItemService.deleteMenuItem(id);
+    }
+
+    // Admin only: Update a menu item
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public MenuItem updateMenuItem(@PathVariable Long id, @RequestBody MenuItem item) {
+        return menuItemService.updateMenuItem(id, item);
     }
 }
