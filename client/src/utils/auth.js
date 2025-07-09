@@ -1,90 +1,103 @@
-import axios from 'axios'
-import { jwtDecode } from 'jwt-decode'
-
-const API = 'http://localhost:8080' // Backend root URL (no /api here)
-
-// ✅ Access token now persisted in localStorage (survives page reload)
-const ACCESS_KEY = 'access'
-
-export function getAccessToken() {
-    return localStorage.getItem(ACCESS_KEY)
-}
-
-export function storeAccessToken(token) {
-    localStorage.setItem(ACCESS_KEY, token)
-}
-
-export function clearTokens() {
-    localStorage.removeItem(ACCESS_KEY)
-}
-
-export function isTokenValid() {
-    const token = getAccessToken()
-    if (!token) return false
-    try {
-        const { exp } = jwtDecode(token)
-        return exp * 1000 > Date.now()
-    } catch {
-        return false
-    }
-}
-
-// ✅ Axios instance
-export const api = axios.create({
-    baseURL: `${API}/api`,
-    withCredentials: true
-})
-
-// ✅ Add token to requests if available
-api.interceptors.request.use(async (config) => {
-    const token = getAccessToken()
-    if (token) config.headers.Authorization = `Bearer ${token}`
-    return config
-})
-
-// ✅ Refresh on 401 + redirect fallback
-api.interceptors.response.use(null, async (error) => {
-    if (error.response?.status === 401) {
-        try {
-            // Try to refresh
-            const res = await axios.post(`${API}/api/auth/refresh`, null, { withCredentials: true })
-            const { token } = res.data
-            storeAccessToken(token)
-
-            // Retry the original request
-            error.config.headers.Authorization = `Bearer ${token}`
-            return api(error.config)
-        } catch (_) {
-            // If refresh fails, clear session and redirect
-            clearTokens()
-            window.location.href = '/admin-login'
-            return Promise.reject(error)
-        }
-    }
-    return Promise.reject(error)
-})
-
-// ✅ Login
 export async function login(username, password) {
-    const res = await axios.post(
-        `${API}/api/auth/login`,
-        { username, password },
-        { withCredentials: true }
-    )
+    const res = await fetch('http://localhost:8080/api/auth/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ username, password })
+    });
 
-    if (res.data?.token) {
-        storeAccessToken(res.data.token)
+    if (!res.ok) {
+        throw new Error('Login failed');
     }
 
-    return res.data
+    const data = await res.json();
+    localStorage.setItem('accessToken', data.token);
 }
 
-// ✅ Logout
-export async function logout() {
+// Get token
+export function getAccessToken() {
+    return localStorage.getItem('accessToken');
+}
+
+// Check token validity
+export function isTokenValid() {
+    const token = getAccessToken();
+    if (!token) return false;
     try {
-        await axios.post(`${API}/api/auth/logout`, null, { withCredentials: true })
-    } finally {
-        clearTokens()
-        window.location.href = '/admin-login'
+        const { exp } = JSON.parse(atob(token.split('.')[1]));
+        return Date.now() < exp * 1000;
+    } catch {
+        return false;
     }
 }
+
+// Central fetch wrapper
+const BASE_URL = 'http://localhost:8080/api';
+
+async function handleResponse(res) {
+    const contentType = res.headers.get('Content-Type');
+
+    if (!res.ok) {
+        const errorText = contentType && contentType.includes('application/json')
+            ? (await res.json()).message || JSON.stringify(await res.json())
+            : await res.text();
+
+        throw new Error(`API ${res.status}: ${errorText}`);
+    }
+
+    return contentType && contentType.includes('application/json')
+        ? res.json()
+        : null;
+}
+
+export const api = {
+    get: async (path) => {
+        const res = await fetch(`${BASE_URL}${path}`, {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${getAccessToken()}`
+            },
+            credentials: 'include'
+        });
+        return handleResponse(res);
+    },
+
+    post: async (path, body) => {
+        const res = await fetch(`${BASE_URL}${path}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${getAccessToken()}`
+            },
+            credentials: 'include',
+            body: JSON.stringify(body)
+        });
+        return handleResponse(res);
+    },
+
+    put: async (path, body) => {
+        const res = await fetch(`${BASE_URL}${path}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${getAccessToken()}`
+            },
+            credentials: 'include',
+            body: JSON.stringify(body)
+        });
+        return handleResponse(res);
+    },
+
+    delete: async (path) => {
+        const res = await fetch(`${BASE_URL}${path}`, {
+            method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${getAccessToken()}`
+            },
+            credentials: 'include'
+        });
+        return handleResponse(res);
+    }
+};

@@ -21,12 +21,16 @@ public class UserService {
             throw new RuntimeException("Current password is incorrect");
         }
 
-        if (!admin.getUsername().equals(request.getNewUsername()) &&
-                userRepo.existsByUsername(request.getNewUsername())) {
-            throw new RuntimeException("Username already in use");
+        // ✅ Only check for username conflict if user is changing it
+        String newUsername = request.getNewUsername();
+        if (newUsername != null && !newUsername.equals(admin.getUsername())) {
+            if (userRepo.existsByUsername(newUsername)) {
+                throw new RuntimeException("Username already in use");
+            }
+            admin.setUsername(newUsername); // ✅ set new username
         }
 
-        admin.setUsername(request.getNewUsername());
+        // ✅ Update password if provided
         if (request.getNewPassword() != null && !request.getNewPassword().isBlank()) {
             admin.setPassword(passwordEncoder.encode(request.getNewPassword()));
         }

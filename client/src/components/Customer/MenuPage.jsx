@@ -1,8 +1,8 @@
 // src/components/MenuPage.jsx
 import React, { useEffect, useState } from 'react';
-import Footer        from './Footer';
-import SimpleHeader  from './SimpleHeader';
-import './MenuPage.css';               // ← keep your existing styles
+import Footer        from '../Footer';
+import SimpleHeader  from '../SimpleHeader';
+import '../Menu/MenuPage.css';               // ← keep your existing styles
 
 /* ————————————————————————————————————  small reusable bits  —————————————————— */
 function MenuCard({ item, onClick }) {
@@ -79,7 +79,7 @@ export default function MenuPage() {
                 const data = await resp.json();
                 setMenuItems(data);
             } catch (err) {
-                console.error('Failed to fetch menu', err);
+                console.error('Failed to fetch Menu', err);
             } finally {
                 setLoading(false);
             }

@@ -1,11 +1,12 @@
 package com.fatayertime.backend.controller;
 
 import com.fatayertime.backend.model.MenuItem;
-import com.fatayertime.backend.service.MenuItemService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import com.fatayertime.backend.request.AdminUpdateRequest;
+import com.fatayertime.backend.repository.MenuItemRepository;
+import com.fatayertime.backend.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -13,45 +14,55 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("api/admin")
 @RequiredArgsConstructor
 public class AdminController {
 
-    private final MenuItemService menuItemService;
+    private final UserService userService;
+    private final MenuItemRepository menuRepo;
 
-    @Operation(summary = "Get current authenticated admin user")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User info returned"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
-    })
-    @GetMapping("/me")
-    public String getAdminInfo(@AuthenticationPrincipal UserDetails userDetails) {
-        return "Logged in as: " + userDetails.getUsername();
+    @PutMapping("/update")
+    public ResponseEntity<?> updateProfile(@RequestBody @Valid AdminUpdateRequest request,
+                                           @AuthenticationPrincipal UserDetails principal) {
+        userService.updateAdminAccount(request, principal.getUsername());
+        return ResponseEntity.ok("✅ Profile updated");
     }
 
-    @Operation(summary = "Get all menu items (admin only)")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "All menu items returned"),
-            @ApiResponse(responseCode = "403", description = "Forbidden")
-    })
-    @GetMapping("/menuitems")
+    // ✅ Get all menu items
+    @GetMapping("/menu")
     public List<MenuItem> getAllMenuItems() {
-        return menuItemService.getAllMenuItems();
+        return menuRepo.findAll();
     }
 
-    @Operation(summary = "Example of a static MenuItem object")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Example menu item returned")
-    })
-    @GetMapping("/menuitems/example")
-    public MenuItem getExampleItem() {
-        return MenuItem.builder()
-                .name("Falafel Fatayer")
-                .description("Delicious falafel wrap with tahini")
-                .price(4.99)
-                .category("Vegetarian")
-                .imageUrl("https://example.com/images/falafel.jpg")
-                .ingredients("Falafel, lettuce, tomato, tahini")
-                .build();
+    // ✅ Create new menu item
+    @PostMapping("/menu")
+    public ResponseEntity<MenuItem> createMenuItem(@RequestBody MenuItem item) {
+        return ResponseEntity.ok(menuRepo.save(item));
+    }
+
+    // ✅ Update menu item
+    @PutMapping("/menu/{id}")
+    public ResponseEntity<MenuItem> updateMenuItem(@PathVariable Long id, @RequestBody MenuItem updatedItem) {
+        return menuRepo.findById(id)
+                .map(item -> {
+                    item.setName(updatedItem.getName());
+                    item.setPrice(updatedItem.getPrice());
+                    item.setImageUrl(updatedItem.getImageUrl());
+                    item.setDescription(updatedItem.getDescription());
+                    item.setIngredients(updatedItem.getIngredients());
+                    item.setCategory(updatedItem.getCategory());
+                    return ResponseEntity.ok(menuRepo.save(item));
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // ✅ Delete menu item
+    @DeleteMapping("/menu/{id}")
+    public ResponseEntity<?> deleteMenuItem(@PathVariable Long id) {
+        if (menuRepo.existsById(id)) {
+            menuRepo.deleteById(id);
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 }

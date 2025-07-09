@@ -40,7 +40,7 @@ function HeaderHero({ showHero = true, showButtons = true }) {
               <li>
                 <Link
                   to="/menu"
-                  className={location.pathname === '/menu' ? 'active' : ''}
+                  className={location.pathname === '/Menu' ? 'active' : ''}
                 >
                   Menu
                 </Link>

@@ -15,7 +15,7 @@ function Footer() {
               AfandiLabs
             </a>
           </h4>
-          <a href="/admin" className="admin-link small">
+          <a href="/admin-login" className="admin-link small">
             Admin
           </a>
         </div>

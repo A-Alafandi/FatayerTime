@@ -1,16 +1,22 @@
 package com.fatayertime.backend.model;
 
-import jakarta.persistence.*;
-import lombok.*;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.util.UUID;
 
-@Entity
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
 @Builder
 public class MenuItem {
 
@@ -26,9 +32,5 @@ public class MenuItem {
     private String category;
     private String imageUrl;
     private String ingredients;
-
     private boolean isVegetarian;
-
-    public MenuItem(String cheeseFatayer, String meltedCheeseWrappedInDough, String s, String fatayer, String fatayerImg, int i, boolean b) {
-    }
 }

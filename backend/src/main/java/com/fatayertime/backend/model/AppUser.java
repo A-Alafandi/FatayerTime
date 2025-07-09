@@ -1,5 +1,6 @@
 package com.fatayertime.backend.model;
 
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -25,6 +26,5 @@ public class AppUser {
 
     private String username;
     private String password;
-    private String email;
     private String role;
 }

@@ -1,6 +1,6 @@
 .menu-hero-banner {
   height: 250px;
-  background: url('../assets/banner2.png') center/cover no-repeat;
+  background: url('../../assets/banner2.png') center/cover no-repeat;
   position: relative;
   display: flex;
   align-items: center;

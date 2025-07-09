@@ -1,74 +1,30 @@
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import MenuPage from './components/MenuPage';
-import SimpleHeader from './components/SimpleHeader';
-import AdminDashboard from './components/AdminDashboard';
-import AdminLogin from './components/AdminLogin';
-import HomePage from './components/HomePage';
-
-import { clearTokens, isTokenValid, storeAccessToken } from "./utils/auth";
+import { Routes, Route, Navigate } from 'react-router-dom';
+import HomePage from './components/Customer/HomePage';
+import MenuPage from './components/Menu/MenuPage';
+import AdminLogin from './components/Login/AdminLogin';
+import AdminDashboard from './components/Admin/AdminDashboard';
+import { isTokenValid } from './utils/auth';
+import AdminSettings from './components/Admin/AdminSettings';
+import NotFound from './components/NotFound';
 
 export default function App() {
-    const [isLoggedIn, setIsLoggedIn] = useState(isTokenValid());
-    const navigate = useNavigate();
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-    useEffect(() => {
-        const refreshAccessToken = async () => {
-            try {
-                const res = await fetch('http://localhost:8080/api/auth/refresh', {
-                    method: 'POST',
-                    credentials: 'include',
-                });
-
-                if (res.ok) {
-                    const data = await res.json();
-                    storeAccessToken(data.token);
-                    setIsAuthenticated(true);
-                } else {
-                    console.warn('Refresh failed');
-                    clearTokens();
-                    setIsAuthenticated(false);
-                }
-            } catch (error) {
-                console.error('Refresh error:', error);
-                setIsAuthenticated(false);
-            }
-        };
-
-        refreshAccessToken();
-    }, []);
-
-    const handleLogin = () => {
-        setIsLoggedIn(true);
-        navigate('/admin');
-    };
-
-    const handleLogout = () => {
-        localStorage.removeItem('authToken');
-        setIsLoggedIn(false);
-        navigate('/');
-    };
-
     return (
         <Routes>
-            {/* Public pages */}
             <Route path="/" element={<HomePage />} />
-            <Route path="/menu" element={
-                <>
-                    <SimpleHeader />
-                    <MenuPage />
-                </>
-            }/>
-
-            {/* Admin pages */}
-            <Route path="/admin" element={
-                isLoggedIn
-                    ? <AdminDashboard onLogout={handleLogout} />
-                    : <Navigate to="/admin-login" />
-            }/>
-
-            <Route path="/admin-login" element={<AdminLogin onLogin={handleLogin} />} />
+            <Route path="/menu" element={<MenuPage />} />
+            <Route path="/admin-login" element={<AdminLogin />} />
+            <Route path="/admin/settings" element={<AdminSettings />} />
+            <Route path="*" element={<NotFound />} />
+            <Route
+                path="/admin"
+                element={
+                    isTokenValid() ? (
+                        <AdminDashboard />
+                    ) : (
+                        <Navigate to="/admin-login" replace />
+                    )
+                }
+            />
         </Routes>
     );
 }

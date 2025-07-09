@@ -15,7 +15,7 @@ public class MenuItemController {
 
     private final MenuItemRepository repository;
 
-    @GetMapping("/all")
+    @GetMapping("")
     public List<MenuItem> getAllItems() {
         return repository.findAll();
     }
