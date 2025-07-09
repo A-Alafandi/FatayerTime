@@ -1,4 +1,4 @@
-package com.fatayertime.backend.Request;
+package com.fatayertime.backend.request;
 
 
 import lombok.Data;
