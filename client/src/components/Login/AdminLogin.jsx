@@ -32,7 +32,7 @@ export default function AdminLogin() {
       // ✅ Ensure token is written before navigating
       setTimeout(() => {
         console.log('🔀 Navigating to /admin...');
-        navigate('');
+        navigate('/admin');
       }, 100);
     } catch (err) {
       console.error('❌ Login error:', err);

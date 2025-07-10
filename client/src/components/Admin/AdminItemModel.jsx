@@ -1,75 +1,84 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
+import './AdminDashboard.css';
 
-export default function ItemModal({ item, onClose, onSave }) {
-    const [form, setForm] = useState({
-        name: '',
-        description: '',
-        ingredients: '',
-        category: '',
-        imageUrl: '',
-        price: 0,
-        vegetarian: false,
-    });
+const AdminItemModel = ({ item, onClose, onSave }) => {
+    const [form, setForm] = useState({ ...item });
 
     useEffect(() => {
-        if (item) setForm(item);
+        if (item) setForm({ ...item });
     }, [item]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setForm((prev) => ({
+        setForm(prev => ({
             ...prev,
             [name]: type === 'checkbox' ? checked : value,
         }));
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
-        await onSave(form);
+        onSave(form);
         onClose();
     };
 
     return (
-        <div className="modal show d-block" tabIndex="-1">
-            <div className="modal-dialog modal-lg">
-                <div className="modal-content">
-                    <div className="modal-header">
-                        <h5 className="modal-title">{item ? 'Edit Item' : 'Add Item'}</h5>
-                        <button type="button" className="btn-close" onClick={onClose}></button>
-                    </div>
-                    <form onSubmit={handleSubmit}>
-                        <div className="modal-body">
-                            {['name', 'description', 'ingredients', 'category', 'imageUrl', 'price'].map((field) => (
-                                <div key={field} className="mb-3">
-                                    <label className="form-label">{field.charAt(0).toUpperCase() + field.slice(1)}</label>
-                                    <input
-                                        type={field === 'price' ? 'number' : 'text'}
-                                        className="form-control"
-                                        name={field}
-                                        value={form[field] || ''}
-                                        onChange={handleChange}
-                                        required
-                                    />
-                                </div>
-                            ))}
-                            <div className="form-check">
-                                <input
-                                    className="form-check-input"
-                                    type="checkbox"
-                                    name="vegetarian"
-                                    checked={form.vegetarian || false}
-                                    onChange={handleChange}
-                                />
-                                <label className="form-check-label">Vegetarian</label>
-                            </div>
-                        </div>
-                        <div className="modal-footer">
-                            <button type="submit" className="btn btn-primary">Save</button>
-                            <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
-                        </div>
-                    </form>
+        <div className="modal" role="dialog" aria-modal="true">
+            <div className="modal-content">
+                <div className="modal-header">
+                    <h2>{item ? 'Edit Item' : 'Add Item'}</h2>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        aria-label="Close modal"
+                    >
+                        &times;
+                    </button>
                 </div>
+
+                <form onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        {['name', 'description', 'ingredients', 'category', 'imageUrl'].map(field => (
+                            <div key={field}>
+                                <label htmlFor={field}>{field.charAt(0).toUpperCase() + field.slice(1)}</label>
+                                <input
+                                    id={field}
+                                    type={field === 'price' ? 'number' : 'text'}
+                                    name={field}
+                                    value={form[field] || ''}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+                        ))}
+
+                        <div className="checkbox-group">
+                            <input
+                                type="checkbox"
+                                id="vegetarian"
+                                name="vegetarian"
+                                checked={form.vegetarian || false}
+                                onChange={handleChange}
+                            />
+                            <label htmlFor="vegetarian">Vegetarian</label>
+                        </div>
+                    </div>
+
+                    <div className="modal-footer">
+                        <button type="submit">Save</button>
+                        <button type="button" onClick={onClose}>Cancel</button>
+                    </div>
+                </form>
             </div>
         </div>
     );
-}
+};
+
+AdminItemModel.propTypes = {
+    item: PropTypes.object,
+    onClose: PropTypes.func.isRequired,
+    onSave: PropTypes.func.isRequired,
+};
+
+export default AdminItemModel;
