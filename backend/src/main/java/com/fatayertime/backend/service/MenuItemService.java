@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -26,7 +27,7 @@ public class MenuItemService {
 
     // Read
     @Transactional(readOnly = true)
-    public MenuItem getMenuItemById(Long id) {
+    public MenuItem getMenuItemById(UUID id) {
         log.debug("Fetching menu item with id: {}", id);
         return menuItemRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Menu item not found with id: " + id));
@@ -46,7 +47,7 @@ public class MenuItemService {
 
     // Update
     @Transactional
-    public MenuItem updateMenuItem(Long id, MenuItem updatedItem) {
+    public MenuItem updateMenuItem(UUID id, MenuItem updatedItem) {
         log.info("Updating menu item with id: {}", id);
         MenuItem existingItem = menuItemRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Menu item not found with id: " + id));
@@ -78,7 +79,7 @@ public class MenuItemService {
 
     // Delete
     @Transactional
-    public void deleteMenuItem(Long id) {
+    public void deleteMenuItem(UUID id) {
         log.info("Deleting menu item with id: {}", id);
         if (!menuItemRepository.existsById(id)) {
             throw new EntityNotFoundException("Menu item not found with id: " + id);
