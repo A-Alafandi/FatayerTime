@@ -2,11 +2,11 @@ package com.fatayertime.backend.repository;
 
 import com.fatayertime.backend.model.MenuItem;
 import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-public interface MenuItemRepository extends JpaRepository<MenuItem, Long> {
+public interface MenuItemRepository extends JpaRepository<MenuItem, UUID> {
 
     // Find single item by exact name match
     Optional<MenuItem> findByName(String name);

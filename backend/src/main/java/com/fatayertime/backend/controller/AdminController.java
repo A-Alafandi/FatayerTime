@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("api/admin")
@@ -42,7 +43,7 @@ public class AdminController {
 
     // ✅ Update menu item
     @PutMapping("/menu/{id}")
-    public ResponseEntity<MenuItem> updateMenuItem(@PathVariable Long id, @RequestBody MenuItem updatedItem) {
+    public ResponseEntity<MenuItem> updateMenuItem(@PathVariable UUID id, @RequestBody MenuItem updatedItem) {
         return menuRepo.findById(id)
                 .map(item -> {
                     item.setName(updatedItem.getName());
@@ -58,7 +59,7 @@ public class AdminController {
 
     // ✅ Delete menu item
     @DeleteMapping("/menu/{id}")
-    public ResponseEntity<?> deleteMenuItem(@PathVariable Long id) {
+    public ResponseEntity<?> deleteMenuItem(@PathVariable UUID id) {
         if (menuRepo.existsById(id)) {
             menuRepo.deleteById(id);
             return ResponseEntity.ok().build();
