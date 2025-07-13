@@ -1,5 +1,6 @@
 export async function login(username, password) {
-    const res = await fetch('http://localhost:8080/api/auth/login', {
+    const apiUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/api';
+    const res = await fetch(`${apiUrl}/auth/login`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -26,15 +27,17 @@ export function isTokenValid() {
     const token = getAccessToken();
     if (!token) return false;
     try {
-        const { exp } = JSON.parse(atob(token.split('.')[1]));
-        return Date.now() < exp * 1000;
-    } catch {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        if (!payload.exp) return false;
+        return Date.now() < payload.exp * 1000;
+    } catch (err) {
+        console.warn('Invalid token format:', err.message);
         return false;
     }
 }
 
 // Central fetch wrapper
-const BASE_URL = 'http://localhost:8080/api';
+const BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/api';
 
 async function handleResponse(res) {
     const contentType = res.headers.get('Content-Type');

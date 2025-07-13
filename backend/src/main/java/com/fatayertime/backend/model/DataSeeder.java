@@ -1,49 +1,58 @@
 package com.fatayertime.backend.model;
 
+
 import com.fatayertime.backend.repository.MenuItemRepository;
 import com.fatayertime.backend.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.UUID;
+
 @Component
 @RequiredArgsConstructor
 public class DataSeeder {
+
     private final MenuItemRepository menuItemRepository;
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private static final Logger log = LoggerFactory.getLogger(DataSeeder.class);
 
     @PostConstruct
     public void seedDatabase() {
         seedAdmin();
-        seedMenu();
+        seedData();
     }
-    private void seedMenu() {
+
+    private void seedData() {
         if (menuItemRepository.count() == 0) {
-            String fatayerImg = "https://i0.wp.com/baitiana.com/wp-content/uploads/2025/02/IMG_1343.jpeg?resize=846%2C1024&ssl=1";
+            log.info("🌱 Seeding initial menu items...");
 
-            List<MenuItem> items = List.of(
-                    // Fatayer
-                    new MenuItem(UUID.randomUUID(),"Spinach Fatayer","pinach with lemon and onion",5.5,"Fatayer",fatayerImg,"Spinach, onion, lemon",true),
-                    new MenuItem(UUID.randomUUID(),"Spinach Fatayer","pinach with lemon and onion",5.5,"Fatayer",fatayerImg,"Spinach, onion, lemon",true),
-                    new MenuItem(UUID.randomUUID(),"Spinach Fatayer","pinach with lemon and onion",5.5,"Fatayer",fatayerImg,"Spinach, onion, lemon",true),
-                    new MenuItem(UUID.randomUUID(),"Spinach Fatayer","pinach with lemon and onion",5.5,"Fatayer",fatayerImg,"Spinach, onion, lemon",true),
-                    new MenuItem(UUID.randomUUID(),"Spinach Fatayer","pinach with lemon and onion",5.5,"Fatayer",fatayerImg,"Spinach, onion, lemon",true),
-                    new MenuItem(UUID.randomUUID(),"Spinach Fatayer","pinach with lemon and onion",5.5,"Fatayer",fatayerImg,"Spinach, onion, lemon",true),
-                    new MenuItem(UUID.randomUUID(),"Spinach Fatayer","pinach with lemon and onion",5.5,"Fatayer",fatayerImg,"Spinach, onion, lemon",true),
-                    new MenuItem(UUID.randomUUID(),"Spinach Fatayer","pinach with lemon and onion",5.5,"Fatayer",fatayerImg,"Spinach, onion, lemon",true),
-                    new MenuItem(UUID.randomUUID(),"Spinach Fatayer","pinach with lemon and onion",5.5,"Fatayer",fatayerImg,"Spinach, onion, lemon",true),
-                    new MenuItem(UUID.randomUUID(),"Spinach Fatayer","pinach with lemon and onion",5.5,"Fatayer",fatayerImg,"Spinach, onion, lemon",true),
-                    new MenuItem(UUID.randomUUID(),"Spinach Fatayer","pinach with lemon and onion",5.5,"Fatayer",fatayerImg,"Spinach, onion, lemon",true),
-                    new MenuItem(UUID.randomUUID(),"Spinach Fatayer","pinach with lemon and onion",5.5,"Fatayer",fatayerImg,"Spinach, onion, lemon",true),
-                    new MenuItem(UUID.randomUUID(),"Spinach Fatayer","pinach with lemon and onion",5.5,"Fatayer",fatayerImg,"Spinach, onion, lemon",true),
-                    new MenuItem(UUID.randomUUID(),"Spinach Fatayer","pinach with lemon and onion",5.5,"Fatayer",fatayerImg,"Spinach, onion, lemon",true)
-            );
+            menuItemRepository.save(MenuItem.builder()
+                    .name(FatayerConstants.SPINACH_FATAYER)
+                    .description(FatayerConstants.SPINACH_DESC)
+                    .price(6.5)
+                    .category(FatayerConstants.CATEGORY_FATAYER)
+                    .build());
 
-            menuItemRepository.saveAll(items);
+            menuItemRepository.save(MenuItem.builder()
+                    .name(FatayerConstants.CHEESE_FATAYER)
+                    .description(FatayerConstants.CHEESE_DESC)
+                    .price(5.5)
+                    .category(FatayerConstants.CATEGORY_FATAYER)
+                    .build());
+
+            menuItemRepository.save(MenuItem.builder()
+                    .name(FatayerConstants.MEAT_FATAYER)
+                    .description(FatayerConstants.MEAT_DESC)
+                    .price(7.0)
+                    .category(FatayerConstants.CATEGORY_FATAYER)
+                    .build());
+
+            log.info("✅ Menu items seeded successfully.");
+        } else {
+            log.info("ℹ️ Menu already seeded. Skipping.");
         }
     }
 
@@ -52,11 +61,10 @@ public class DataSeeder {
             AppUser admin = new AppUser();
             admin.setId(UUID.randomUUID());
             admin.setUsername("admin");
-            admin.setPassword(passwordEncoder.encode("admin123"));
+            admin.setPassword("$2a$10$ORTVr3lFkaGqdHSWs05pVOuaeRNDcGmhhwpk8yfmft6NzAr2ujICa");
             admin.setRole("ADMIN");
             userRepository.save(admin);
-            System.out.println("✅ Admin account seeded.");
+            log.info("✅ Admin account seeded.");
         }
-
     }
 }

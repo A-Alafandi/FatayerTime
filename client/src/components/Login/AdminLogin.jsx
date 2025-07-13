@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { login } from '../../utils/auth';
 import './AdminLogin.css';
 
 export default function AdminLogin() {
@@ -11,34 +12,16 @@ export default function AdminLogin() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
-
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-        credentials: 'include',
-      });
-
-      if (!res.ok) {
-        throw new Error('Ongeldige gebruikersnaam of wachtwoord');
-      }
-
-      const data = await res.json();
-      console.log('✅ Login successful, token:', data.token);
-
-      localStorage.setItem('accessToken', data.token);
-
-      // ✅ Ensure token is written before navigating
-      setTimeout(() => {
-        console.log('🔀 Navigating to /admin...');
-        navigate('/admin');
-      }, 100);
+      await login(username, password);
+      console.log('✅ Login successful');
+      navigate('/admin');
     } catch (err) {
       console.error('❌ Login error:', err);
       setError(err.message || 'Login mislukt');
     }
   };
+
   return (
       <div className="login-container">
         <div className="login-card">

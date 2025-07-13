@@ -1,77 +1,104 @@
 import React, { useState } from 'react';
 import { api } from '../../utils/auth';
-import './AdminSettings.css';
-import AdminNavbar from "./AdminNavbar";
+import Notification from '../../components/Notification';
+import AdminNavbar from './AdminNavbar';
+import styles from './AdminSettings.css';
 
 export default function AdminSettings() {
     const [currentPassword, setCurrentPassword] = useState('');
     const [newUsername, setNewUsername] = useState('');
     const [newPassword, setNewPassword] = useState('');
-    const [message, setMessage] = useState('');
+    const [notification, setNotification] = useState({ message: '', type: '' });
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const validateInputs = () => {
+        if (!currentPassword.trim()) return 'Current password is required';
+        if (!newUsername.trim()) return 'New username is required';
+        if (newPassword && newPassword.length < 6) return 'New password must be at least 6 characters';
+        return '';
+    };
+
+    const handleSubmit = async () => {
+        const error = validateInputs();
+        if (error) {
+            setNotification({ message: error, type: 'error' });
+            return;
+        }
+
         try {
             await api.put('/admin/update', {
                 currentPassword,
                 newUsername,
-                newPassword,
+                newPassword: newPassword || undefined,
             });
-            setMessage('✅ Account updated successfully.');
+            setNotification({ message: '✅ Account updated successfully.', type: 'success' });
+            setCurrentPassword('');
+            setNewUsername('');
+            setNewPassword('');
         } catch (err) {
-            console.error(err);
-            setMessage('❌ Failed to update account: ' + err.message);
+            setNotification({ message: `❌ Failed to update account: ${err.message}`, type: 'error' });
         }
     };
 
     return (
-
-        <div className="settings-container">
+        <div className={styles.settingsContainer}>
             <AdminNavbar />
-            <div className="settings-card">
-
-
-                <h2 className="settings-title">Manage Admin Account</h2>
-
-                <form className="settings-form" onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label htmlFor="currentPassword">Current Password</label>
+            {notification.message && (
+                <Notification
+                    message={notification.message}
+                    type={notification.type}
+                    onClose={() => setNotification({ message: '', type: '' })}
+                />
+            )}
+            <div className={styles.settingsCard}>
+                <h2 className={styles.settingsTitle}>Manage Admin Account</h2>
+                <div className={styles.settingsForm}>
+                    <div className={styles.formGroup}>
+                        <label htmlFor="currentPassword" className={styles.formLabel}>
+                            Current Password<span className={styles.required}>*</span>
+                        </label>
                         <input
                             id="currentPassword"
                             type="password"
-                            className="settings-input"
+                            className={styles.settingsInput}
                             value={currentPassword}
                             onChange={(e) => setCurrentPassword(e.target.value)}
                             required
+                            aria-required="true"
                         />
                     </div>
-
-                    <div className="form-group">
-                        <label htmlFor="newUsername">New Username</label>
+                    <div className={styles.formGroup}>
+                        <label htmlFor="newUsername" className={styles.formLabel}>
+                            New Username<span className={styles.required}>*</span>
+                        </label>
                         <input
                             id="newUsername"
                             type="text"
-                            className="settings-input"
+                            className={styles.settingsInput}
                             value={newUsername}
                             onChange={(e) => setNewUsername(e.target.value)}
                             required
+                            aria-required="true"
                         />
                     </div>
-
-                    <div className="form-group">
-                        <label htmlFor="newPassword">New Password</label>
+                    <div className={styles.formGroup}>
+                        <label htmlFor="newPassword" className={styles.formLabel}>New Password</label>
                         <input
                             id="newPassword"
                             type="password"
-                            className="settings-input"
+                            className={styles.settingsInput}
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
                         />
                     </div>
-
-                    <button type="submit" className="settings-button">Update</button>
-                </form>
-                {message && <p className="settings-message">{message}</p>}
+                    <button
+                        type="button"
+                        className={styles.settingsButton}
+                        onClick={handleSubmit}
+                        aria-label="Update account"
+                    >
+                        Update
+                    </button>
+                </div>
             </div>
         </div>
     );

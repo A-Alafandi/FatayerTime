@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import styles from './Notification.module.css';
+import styles from './Notification.css';
 
 const Notification = ({
                           message,
@@ -35,9 +35,7 @@ const Notification = ({
 
     return (
         <div
-            className={`${styles.notification} ${styles[type]} ${styles[position]} ${
-                isExiting ? styles.exiting : ''
-            }`}
+            className={`${styles.notification} ${styles[type]} ${styles[position]} ${isExiting ? styles.exiting : ''}`}
             role="alert"
             aria-live="assertive"
             aria-atomic="true"

@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import './ConfirmationModal.css';
+import './Confirmation.css';
 
-const ConfirmationModal = ({
+const Confirmation = ({
                                title = 'Confirm Action',
                                message,
                                confirmText = 'Confirm',
@@ -39,7 +39,7 @@ const ConfirmationModal = ({
     );
 };
 
-ConfirmationModal.propTypes = {
+Confirmation.propTypes = {
     title: PropTypes.string,
     message: PropTypes.string.isRequired,
     confirmText: PropTypes.string,
@@ -49,4 +49,4 @@ ConfirmationModal.propTypes = {
     danger: PropTypes.bool
 };
 
-export default ConfirmationModal;
+export default Confirmation;

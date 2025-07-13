@@ -8,15 +8,8 @@ import java.util.UUID;
 
 public interface MenuItemRepository extends JpaRepository<MenuItem, UUID> {
 
-    // Find single item by exact name match
+
     Optional<MenuItem> findByName(String name);
-
-    // Find all items containing name (case-insensitive)
     List<MenuItem> findByNameContainingIgnoreCase(String name);
-
-    // Find by ID is already provided by JpaRepository
-    // Optional<MenuItem> findById(Long id);
-
-    // Basic category filter
     List<MenuItem> findByCategory(String category);
 }

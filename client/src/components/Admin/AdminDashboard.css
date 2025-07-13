@@ -1,10 +1,10 @@
-.admin-dashboard {
+.adminDashboard {
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
 }
 
-.dashboard-header {
+.dashboardHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -19,7 +19,7 @@
   align-items: center;
 }
 
-.search-control input {
+.searchControl input {
   padding: 0.75rem 1rem;
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -27,8 +27,14 @@
   font-size: 1rem;
 }
 
-.add-button {
-  background: #4CAF50;
+.searchControl input:focus {
+  outline: none;
+  border-color: #ff6b35;
+  box-shadow: 0 0 5px rgba(255, 107, 53, 0.3);
+}
+
+.addButton {
+  background: #ff6b35;
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
@@ -36,13 +42,15 @@
   cursor: pointer;
   font-weight: 600;
   transition: background 0.2s;
+  display: flex;
+  align-items: center;
 }
 
-.add-button:hover {
-  background: #3d8b40;
+.addButton:hover {
+  background: #e55a2b;
 }
 
-.loading-state {
+.loadingState {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -51,7 +59,7 @@
   gap: 1rem;
 }
 
-.empty-state {
+.emptyState {
   text-align: center;
   padding: 3rem;
   border: 1px dashed #ddd;
@@ -59,13 +67,13 @@
   background: #f9f9f9;
 }
 
-.menu-items-list {
+.menuItemsList {
   border: 1px solid #eee;
   border-radius: 8px;
   overflow: hidden;
 }
 
-.list-header {
+.listHeader {
   display: grid;
   grid-template-columns: 3fr 1fr 1fr 1fr;
   background: #f5f5f5;
@@ -74,83 +82,96 @@
   border-bottom: 1px solid #ddd;
 }
 
-.menu-item {
+.menuItem {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 3fr 1fr;
   border-bottom: 1px solid #eee;
   padding: 1rem;
   transition: background 0.2s;
 }
 
-.menu-item:hover {
+.menuItem:hover {
   background: #f9f9f9;
 }
 
-.item-main {
+.itemMain {
   display: grid;
   grid-template-columns: 3fr 1fr 1fr;
   gap: 1rem;
   align-items: center;
 }
 
-.item-name {
+.itemName {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
-.item-thumbnail {
+.itemThumbnail {
   width: 60px;
   height: 60px;
   object-fit: cover;
   border-radius: 4px;
 }
 
-.item-description {
+.itemDescription {
   color: #666;
   font-size: 0.9rem;
   margin-top: 0.25rem;
 }
 
-.item-actions {
+.itemActions {
   display: flex;
   gap: 0.5rem;
   align-items: center;
 }
 
-.edit-button {
-  background: #2196F3;
-  color: white;
+.editButton,
+.deleteButton {
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 4px;
   cursor: pointer;
+  font-size: 1rem;
 }
 
-.delete-button {
-  background: #f44336;
+.editButton {
+  background: #2563eb;
   color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
+}
+
+.editButton:hover {
+  background: #1e40af;
+}
+
+.deleteButton {
+  background: #ef4444;
+  color: white;
+}
+
+.deleteButton:hover {
+  background: #b91c1c;
 }
 
 @media (max-width: 768px) {
-  .list-header {
+  .listHeader {
     display: none;
   }
 
-  .menu-item {
+  .menuItem {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
 
-  .item-main {
+  .itemMain {
     grid-template-columns: 1fr;
   }
 
-  .item-actions {
+  .itemActions {
     justify-content: flex-end;
+  }
+
+  .searchControl input {
+    min-width: 200px;
   }
 }
