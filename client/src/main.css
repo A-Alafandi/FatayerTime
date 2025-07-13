@@ -725,3 +725,33 @@ footer .copyright span {
 .contact-card {
   margin-bottom: 20px;
 }
+
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  z-index: 1000;
+  background: #ff6b35;
+  color: #fff;
+  padding: 0.8em 1.2em;
+  border-radius: 0 0 7px 7px;
+}
+.skip-link:focus {
+  left: 12px;
+  top: 12px;
+  width: auto;
+  height: auto;
+  text-align: center;
+  font-weight: 700;
+  outline: 2px solid #ff6b35;
+}
+.visually-hidden {
+  position: absolute !important;
+  height: 1px; width: 1px; overflow: hidden;
+  clip: rect(1px 1px 1px 1px); /* IE6, IE7 */
+  clip: rect(1px, 1px, 1px, 1px);
+  white-space: nowrap;
+}

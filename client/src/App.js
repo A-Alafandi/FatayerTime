@@ -4,7 +4,7 @@ import { isTokenValid } from './utils/auth';
 import Spinner from './components/spinner/Spinner';
 
 // Lazy-loaded components
-const HomePage = lazy(() => import('./components/Customer/HomePage'));
+const HomePage = lazy(() => import('./components/HomePage'));
 const MenuPage = lazy(() => import('./components/Menu/MenuPage'));
 const AdminLogin = lazy(() => import('./components/Login/AdminLogin'));
 const AdminDashboard = lazy(() => import('./components/Admin/AdminDashboard'));
@@ -56,7 +56,7 @@ export default function App() {
                     <Route path="/menu" element={<MenuPage />} />
                     <Route path="/admin-login" element={<AdminLogin />} />
                     <Route
-                        path="/adminMenu"
+                        path="/admin"
                         element={
                             <ProtectedRoute>
                                 <AdminDashboard />

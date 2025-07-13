@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import styles from './Notification.css';
+import styles from './Notification.module.css';
 
 const Notification = ({
                           message,

@@ -9,13 +9,13 @@ import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
-@RequestMapping("/api/menu")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class MenuItemController {
 
     private final MenuItemRepository repository;
 
-    @GetMapping("/all")
+    @GetMapping("/menu")
     public List<MenuItem> getAllMenuItems() {
         return repository.findAll();
     }

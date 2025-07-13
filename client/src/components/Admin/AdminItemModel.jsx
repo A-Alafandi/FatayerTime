@@ -1,225 +1,279 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import styles from './AdminDashboard.module.css';
+import styles from './AdminDashboard.module.css'; // Use the same CSS module as dashboard
 
-const AdminItemModel = ({ item, onClose, onSave }) => {
+function AdminItemModel({ item, onSave, onClose }) {
     const [form, setForm] = useState({
         name: '',
+        category: '',
         description: '',
         price: '',
-        ingredients: '',
-        category: '',
         imageUrl: '',
         vegetarian: false,
-        ...item,
+        spicy: false,
+        popular: false,
+        ingredients: ''
     });
     const [errors, setErrors] = useState({});
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const firstInputRef = useRef(null);
-    const modalRef = useRef(null);
+    const [generalError, setGeneralError] = useState('');
+    const [saving, setSaving] = useState(false);
+    const [imageFallback, setImageFallback] = useState(false);
 
+    const modalRef = useRef();
+    const firstInputRef = useRef();
+
+    // Initialize/reset form when opened
     useEffect(() => {
-        if (item) {
-            setForm({
-                name: '',
-                description: '',
-                price: '',
-                ingredients: '',
-                category: '',
-                imageUrl: '',
-                vegetarian: false,
-                ...item,
-            });
-        }
-        if (firstInputRef.current) {
-            firstInputRef.current.focus();
-        }
+        setForm({
+            name: item?.name || '',
+            category: item?.category || '',
+            description: item?.description || '',
+            price: item?.price?.toString() || '',
+            imageUrl: item?.imageUrl || '',
+            vegetarian: !!item?.vegetarian,
+            spicy: !!item?.spicy,
+            popular: !!item?.popular,
+            ingredients: item?.ingredients ? item.ingredients.join(', ') : ''
+        });
+        setErrors({});
+        setGeneralError('');
+        setSaving(false);
+        setImageFallback(false);
+        // Focus first input for accessibility
+        firstInputRef.current?.focus();
     }, [item]);
 
+    // Trap focus inside modal
     useEffect(() => {
-        const handleOutsideClick = (e) => {
-            if (modalRef.current && !modalRef.current.contains(e.target)) {
-                onClose();
+        function handleKeyDown(e) {
+            if (e.key === 'Escape') onClose();
+            // Trap focus
+            if (e.key === 'Tab' && modalRef.current) {
+                const focusable = modalRef.current.querySelectorAll('input, textarea, button, select, [tabindex]:not([tabindex="-1"])');
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (e.shiftKey && document.activeElement === first) {
+                    e.preventDefault();
+                    last.focus();
+                } else if (!e.shiftKey && document.activeElement === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
             }
-        };
-        document.addEventListener('mousedown', handleOutsideClick);
-        return () => document.removeEventListener('mousedown', handleOutsideClick);
+        }
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
     }, [onClose]);
 
-    const validateForm = () => {
+    // Form validation
+    const validate = () => {
         const newErrors = {};
-        if (!form.name?.trim()) newErrors.name = 'Name is required';
-        if (!form.description?.trim()) newErrors.description = 'Description is required';
-        if (!form.price || Number(form.price) <= 0) newErrors.price = 'Price must be greater than 0';
-        if (!form.category?.trim()) newErrors.category = 'Category is required';
-        if (form.imageUrl && !isValidUrl(form.imageUrl)) newErrors.imageUrl = 'Please enter a valid URL';
-        return newErrors;
+        if (!form.name.trim()) newErrors.name = 'Name is required.';
+        if (!form.category.trim()) newErrors.category = 'Category is required.';
+        if (!form.price || isNaN(parseFloat(form.price))) newErrors.price = 'Valid price is required.';
+        if (!form.description.trim()) newErrors.description = 'Description is required.';
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
 
-    const isValidUrl = (string) => {
-        try {
-            // Add protocol if missing
-            const url = string.match(/^https?:\/\//) ? string : `https://${string}`;
-            new URL(url);
-            return true;
-        } catch (_) {
-            return false;
-        }
-    };
-
+    // Handle form changes
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setForm(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value,
+        setForm(f => ({
+            ...f,
+            [name]: type === 'checkbox' ? checked : value
         }));
-        if (errors[name]) {
-            setErrors(prev => ({ ...prev, [name]: '' }));
-        }
+        setErrors(errs => ({ ...errs, [name]: undefined }));
     };
 
+    // Save handler
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const validationErrors = validateForm();
-        if (Object.keys(validationErrors).length > 0) {
-            setErrors(validationErrors);
-            return;
-        }
-
-        setIsSubmitting(true);
+        if (!validate()) return;
+        setSaving(true);
+        setGeneralError('');
         try {
-            const formData = {
+            await onSave({
                 ...form,
-                price: Number(form.price),
-                imageUrl: form.imageUrl
-                    ? form.imageUrl.match(/^https?:\/\//)
-                        ? form.imageUrl
-                        : `https://${form.imageUrl}`
-                    : '',
-            };
-            await onSave(formData);
-            onClose();
-        } catch (error) {
-            setErrors({ submit: 'Failed to save item. Please try again.' });
-        } finally {
-            setIsSubmitting(false);
+                price: parseFloat(form.price),
+                ingredients: form.ingredients
+                    ? form.ingredients.split(',').map(s => s.trim()).filter(Boolean)
+                    : [],
+            });
+        } catch (err) {
+            setGeneralError(err.message || 'Failed to save item.');
+            setSaving(false);
         }
     };
 
-    const handleKeyDown = (e) => {
-        if (e.key === 'Escape') {
-            onClose();
+    // Image fallback to default if broken
+    const handleImgError = () => {
+        if (!imageFallback) {
+            setForm(f => ({ ...f, imageUrl: '/images/fallback-food.jpg' }));
+            setImageFallback(true);
         }
     };
-
-    const formFields = [
-        { name: 'name', label: 'Name', type: 'text', required: true },
-        { name: 'description', label: 'Description', type: 'text', required: true },
-        { name: 'price', label: 'Price (€)', type: 'number', required: true, min: 0, step: 0.01 },
-        { name: 'ingredients', label: 'Ingredients', type: 'text', required: true },
-        { name: 'category', label: 'Category', type: 'text', required: true },
-        { name: 'imageUrl', label: 'Image URL', type: 'url', required: false },
-    ];
 
     return (
-        <div className={styles.modalBackdrop} onKeyDown={handleKeyDown}>
-            <div className={styles.modal} role="dialog" aria-modal="true" ref={modalRef}>
-                <div className={styles.modalHeader}>
-                    <h2>{item?.id ? 'Edit Item' : 'Add New Item'}</h2>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        aria-label="Close modal"
-                        disabled={isSubmitting}
-                        className={styles.closeButton}
-                    >
-                        <i className="bi bi-x-lg"></i>
-                    </button>
-                </div>
-                <div className={styles.modalContent}>
-                    <div className={styles.formGroup}>
-                        {formFields.map((field, index) => (
-                            <div key={field.name} className={styles.formField}>
-                                <label htmlFor={field.name} className={styles.formLabel}>
-                                    {field.label}
-                                    {field.required && <span className={styles.required}>*</span>}
-                                </label>
-                                <input
-                                    ref={index === 0 ? firstInputRef : null}
-                                    id={field.name}
-                                    type={field.type}
-                                    name={field.name}
-                                    value={form[field.name] || ''}
-                                    onChange={handleChange}
-                                    required={field.required}
-                                    min={field.min}
-                                    step={field.step}
-                                    disabled={isSubmitting}
-                                    className={styles.formInput}
-                                    aria-describedby={errors[field.name] ? `${field.name}-error` : undefined}
-                                />
-                                {errors[field.name] && (
-                                    <span id={`${field.name}-error`} className={styles.errorMessage}>
-                                        {errors[field.name]}
-                                    </span>
-                                )}
-                            </div>
-                        ))}
-                        <div className={styles.checkboxGroup}>
+        <div className={styles.modalBackdrop} tabIndex={-1} ref={modalRef} aria-modal="true" role="dialog">
+            <div className={styles.modal}>
+                <h3 className={styles.modalTitle}>{item ? 'Edit Menu Item' : 'Add New Item'}</h3>
+                <form onSubmit={handleSubmit} autoComplete="off" className={styles.modalForm}>
+                    <div className={styles.modalField}>
+                        <label htmlFor="name">Name<span aria-hidden="true" style={{ color: '#ff6b35' }}>*</span></label>
+                        <input
+                            ref={firstInputRef}
+                            id="name"
+                            name="name"
+                            type="text"
+                            className={styles.input}
+                            value={form.name}
+                            onChange={handleChange}
+                            required
+                            disabled={saving}
+                        />
+                        {errors.name && <div className={styles.fieldError}>{errors.name}</div>}
+                    </div>
+                    <div className={styles.modalField}>
+                        <label htmlFor="category">Category<span aria-hidden="true" style={{ color: '#ff6b35' }}>*</span></label>
+                        <input
+                            id="category"
+                            name="category"
+                            type="text"
+                            className={styles.input}
+                            value={form.category}
+                            onChange={handleChange}
+                            required
+                            disabled={saving}
+                        />
+                        {errors.category && <div className={styles.fieldError}>{errors.category}</div>}
+                    </div>
+                    <div className={styles.modalField}>
+                        <label htmlFor="price">Price (€)<span aria-hidden="true" style={{ color: '#ff6b35' }}>*</span></label>
+                        <input
+                            id="price"
+                            name="price"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            className={styles.input}
+                            value={form.price}
+                            onChange={handleChange}
+                            required
+                            disabled={saving}
+                        />
+                        {errors.price && <div className={styles.fieldError}>{errors.price}</div>}
+                    </div>
+                    <div className={styles.modalField}>
+                        <label htmlFor="description">Description<span aria-hidden="true" style={{ color: '#ff6b35' }}>*</span></label>
+                        <textarea
+                            id="description"
+                            name="description"
+                            rows={3}
+                            className={styles.textarea}
+                            value={form.description}
+                            onChange={handleChange}
+                            required
+                            disabled={saving}
+                        />
+                        {errors.description && <div className={styles.fieldError}>{errors.description}</div>}
+                    </div>
+                    <div className={styles.modalField}>
+                        <label htmlFor="ingredients">Ingredients</label>
+                        <input
+                            id="ingredients"
+                            name="ingredients"
+                            type="text"
+                            className={styles.input}
+                            placeholder="Comma-separated"
+                            value={form.ingredients}
+                            onChange={handleChange}
+                            disabled={saving}
+                        />
+                    </div>
+                    <div className={styles.modalField}>
+                        <label htmlFor="imageUrl">Image URL</label>
+                        <input
+                            id="imageUrl"
+                            name="imageUrl"
+                            type="url"
+                            className={styles.input}
+                            value={form.imageUrl}
+                            onChange={handleChange}
+                            disabled={saving}
+                        />
+                        {form.imageUrl && (
+                            <img
+                                src={form.imageUrl}
+                                alt="Preview"
+                                className={styles.previewImg}
+                                onError={handleImgError}
+                                style={{ marginTop: 8, maxHeight: 80, borderRadius: 8 }}
+                            />
+                        )}
+                    </div>
+                    <div className={styles.modalFieldCheckboxes}>
+                        <label>
                             <input
                                 type="checkbox"
-                                id="vegetarian"
                                 name="vegetarian"
-                                checked={form.vegetarian || false}
+                                checked={form.vegetarian}
                                 onChange={handleChange}
-                                disabled={isSubmitting}
-                                className={styles.checkboxInput}
+                                disabled={saving}
                             />
-                            <label htmlFor="vegetarian" className={styles.formLabel}>Vegetarian</label>
-                        </div>
+                            Vegetarian
+                        </label>
+                        <label>
+                            <input
+                                type="checkbox"
+                                name="spicy"
+                                checked={form.spicy}
+                                onChange={handleChange}
+                                disabled={saving}
+                            />
+                            Spicy
+                        </label>
+                        <label>
+                            <input
+                                type="checkbox"
+                                name="popular"
+                                checked={form.popular}
+                                onChange={handleChange}
+                                disabled={saving}
+                            />
+                            Popular
+                        </label>
                     </div>
-                    {errors.submit && (
-                        <div className={styles.errorMessage}>{errors.submit}</div>
+                    {generalError && (
+                        <div className={styles.generalError}>{generalError}</div>
                     )}
                     <div className={styles.modalFooter}>
                         <button
                             type="button"
-                            onClick={handleSubmit}
-                            disabled={isSubmitting}
-                            className={styles.saveButton}
-                            aria-label="Save item"
-                        >
-                            {isSubmitting ? 'Saving...' : 'Save'}
-                        </button>
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            disabled={isSubmitting}
                             className={styles.cancelButton}
-                            aria-label="Cancel"
+                            onClick={onClose}
+                            disabled={saving}
                         >
                             Cancel
                         </button>
+                        <button
+                            type="submit"
+                            className={styles.saveButton}
+                            disabled={saving}
+                        >
+                            {saving ? 'Saving...' : 'Save'}
+                        </button>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     );
-};
+}
 
 AdminItemModel.propTypes = {
-    item: PropTypes.shape({
-        id: PropTypes.string,
-        name: PropTypes.string,
-        description: PropTypes.string,
-        price: PropTypes.number,
-        ingredients: PropTypes.string,
-        category: PropTypes.string,
-        imageUrl: PropTypes.string,
-        vegetarian: PropTypes.bool,
-    }),
-    onClose: PropTypes.func.isRequired,
+    item: PropTypes.object,
     onSave: PropTypes.func.isRequired,
+    onClose: PropTypes.func.isRequired,
 };
 
 export default AdminItemModel;
