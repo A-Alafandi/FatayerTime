@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Component
@@ -32,21 +33,21 @@ public class DataSeeder {
             menuItemRepository.save(MenuItem.builder()
                     .name(FatayerConstants.SPINACH_FATAYER)
                     .description(FatayerConstants.SPINACH_DESC)
-                    .price(6.5)
+                    .price(BigDecimal.valueOf(3.5))
                     .category(FatayerConstants.CATEGORY_FATAYER)
                     .build());
 
             menuItemRepository.save(MenuItem.builder()
                     .name(FatayerConstants.CHEESE_FATAYER)
                     .description(FatayerConstants.CHEESE_DESC)
-                    .price(5.5)
+                    .price(BigDecimal.valueOf(3.3))
                     .category(FatayerConstants.CATEGORY_FATAYER)
                     .build());
 
             menuItemRepository.save(MenuItem.builder()
                     .name(FatayerConstants.MEAT_FATAYER)
                     .description(FatayerConstants.MEAT_DESC)
-                    .price(7.0)
+                    .price(BigDecimal.valueOf(7))
                     .category(FatayerConstants.CATEGORY_FATAYER)
                     .build());
 

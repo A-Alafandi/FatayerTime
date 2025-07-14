@@ -1,4 +1,4 @@
-package com.fatayertime.backend.request;
+package com.fatayertime.backend.dto;
 
 
 import lombok.Getter;
@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 @Getter
 @NoArgsConstructor
-public  class AdminUpdateRequest {
+public  class AdminUpdateRequestDTO {
     private String currentPassword;
     private String newUsername;
     private String newPassword;

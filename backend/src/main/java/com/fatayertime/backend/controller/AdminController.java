@@ -1,69 +1,60 @@
 package com.fatayertime.backend.controller;
 
-import com.fatayertime.backend.model.MenuItem;
-import com.fatayertime.backend.request.AdminUpdateRequest;
-import com.fatayertime.backend.repository.MenuItemRepository;
-import com.fatayertime.backend.service.UserService;
+import com.fatayertime.backend.dto.AdminUpdateRequestDTO;
+import com.fatayertime.backend.dto.AdminUpdateResponseDTO;
+import com.fatayertime.backend.model.AppUser;
+import com.fatayertime.backend.repository.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.UUID;
-
 @RestController
-@RequestMapping("api/admin")
+@RequestMapping("/api/admin")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
-    private final UserService userService;
-    private final MenuItemRepository menuRepo;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
+    /**
+     * Endpoint for admin to update their own username (email) and/or password.
+     */
     @PutMapping("/update")
-    public ResponseEntity<?> updateProfile(@RequestBody @Valid AdminUpdateRequest request,
-                                           @AuthenticationPrincipal UserDetails principal) {
-        userService.updateAdminAccount(request, principal.getUsername());
-        return ResponseEntity.ok("✅ Profile updated");
-    }
+    public ResponseEntity<AdminUpdateResponseDTO> updateProfile(
+            @Valid @RequestBody AdminUpdateRequestDTO request
+    ) {
+        // Find admin user by current username/email
+        AppUser admin = userRepository.findByUsername(request.getNewUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-    // ✅ Get all menu items
-    @GetMapping("/menu")
-    public List<MenuItem> getAllMenuItems() {
-        return menuRepo.findAll();
-    }
-
-    // ✅ Create new menu item
-    @PostMapping("/menu")
-    public ResponseEntity<MenuItem> createMenuItem(@RequestBody MenuItem item) {
-        return ResponseEntity.ok(menuRepo.save(item));
-    }
-
-    // ✅ Update menu item
-    @PutMapping("/menu/{id}")
-    public ResponseEntity<MenuItem> updateMenuItem(@PathVariable UUID id, @RequestBody MenuItem updatedItem) {
-        return menuRepo.findById(id)
-                .map(item -> {
-                    item.setName(updatedItem.getName());
-                    item.setPrice(updatedItem.getPrice());
-                    item.setImageUrl(updatedItem.getImageUrl());
-                    item.setDescription(updatedItem.getDescription());
-                    item.setIngredients(updatedItem.getIngredients());
-                    item.setCategory(updatedItem.getCategory());
-                    return ResponseEntity.ok(menuRepo.save(item));
-                })
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    // ✅ Delete menu item
-    @DeleteMapping("/menu/{id}")
-    public ResponseEntity<?> deleteMenuItem(@PathVariable UUID id) {
-        if (menuRepo.existsById(id)) {
-            menuRepo.deleteById(id);
-            return ResponseEntity.ok().build();
+        // Check current password matches
+        if (!passwordEncoder.matches(request.getCurrentPassword(), admin.getPassword())) {
+            AdminUpdateResponseDTO resp = new AdminUpdateResponseDTO(null, "Current password is incorrect", false);
+            return ResponseEntity.badRequest().body(resp);
         }
-        return ResponseEntity.notFound().build();
+
+        // Check if username is changed and not already taken
+        if (!admin.getUsername().equals(request.getNewUsername()) &&
+                userRepository.existsByUsername(request.getNewUsername())) {
+            AdminUpdateResponseDTO resp = new AdminUpdateResponseDTO(null, "Username/email is already in use", false);
+            return ResponseEntity.badRequest().body(resp);
+        }
+
+        // Update username (email) if changed
+        admin.setUsername(request.getNewUsername());
+
+        // Update password if provided (and not blank)
+        if (request.getNewPassword() != null && !request.getNewPassword().isBlank()) {
+            admin.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        }
+
+        userRepository.save(admin);
+
+        AdminUpdateResponseDTO resp = new AdminUpdateResponseDTO(admin.getUsername(), "Profile updated successfully", true);
+        return ResponseEntity.ok(resp);
     }
 }

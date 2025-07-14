@@ -1,36 +1,49 @@
 package com.fatayertime.backend.model;
 
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+import lombok.*;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.GenericGenerator;
-
+import java.math.BigDecimal;
 import java.util.UUID;
 
-@Data
+@Entity
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
 @Builder
 public class MenuItem {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(updatable = false, nullable = false)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @NotBlank
+    @Column(nullable = false)
     private String name;
+
+    @NotBlank
+    @Size(max = 512)
+    @Column(nullable = false)
     private String description;
-    private double price;
+
+    @NotNull
+    @DecimalMin("0.0")
+    @Column(nullable = false)
+    private BigDecimal price;
+
+    @NotBlank
+    @Column(nullable = false)
     private String category;
+
+    @NotBlank
+    @Column(nullable = false)
     private String imageUrl;
+
+    @NotBlank
+    @Column(nullable = false)
     private String ingredients;
+
+    @Column(nullable = false)
     private boolean isVegetarian;
 }
