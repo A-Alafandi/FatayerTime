@@ -1,0 +1,624 @@
+/* ===== Admin Panel Global Styles ===== */
+
+/* --- Dashboard and Panel Layout --- */
+.admin-dashboard
+.settings-root {
+    min-height: 100vh;
+    background: #f5f6fa;
+    max-width: 70vw;
+    margin: 0 auto;
+    padding: 2.7rem 1.2rem 2.5rem;
+    border-radius: 14px;
+    box-shadow: 0 6px 32px rgba(44,62,80,0.07);
+}
+
+/* --- Admin Navbar --- */
+.admin-navbar {
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(44,62,80,0.06);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.admin-navbar-container {
+    max-width: 1150px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    justify-content: space-between;
+}
+
+.admin-logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    gap: 0.6rem;
+}
+.admin-logo-img { height: 38px; }
+.admin-logo-text { font-size: 1.13rem; font-weight: 700; color: #222; }
+
+.admin-links {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.admin-link, .admin-logout-btn {
+    font-size: 1.04rem;
+    color: #2c3e50;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem 1rem;
+    border-radius: 999px;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+}
+.admin-link:hover, .admin-link:focus,
+.admin-logout-btn:hover, .admin-logout-btn:focus {
+    background: #ff6b35;
+    color: #fff;
+    outline: 2px solid #ff6b35;
+}
+.admin-logout-btn { font-weight: 600; }
+
+.admin-mobile-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 2rem;
+    margin-left: 1.2rem;
+    color: #2c3e50;
+    cursor: pointer;
+}
+.admin-hamburger-icon { font-size: 2rem; }
+
+@media (max-width: 900px) {
+    .admin-links { display: none; }
+    .admin-mobile-toggle { display: block; }
+}
+
+.admin-mobile-menu-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(40,42,54,0.18);
+    z-index: 3000;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+}
+.admin-mobile-menu {
+    background: #fff;
+    width: 80vw;
+    max-width: 330px;
+    min-height: 100vh;
+    padding: 2rem 1.2rem 1.2rem;
+    box-shadow: -2px 0 20px rgba(44,62,80,0.13);
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+    position: relative;
+    animation: slideInMenu 0.22s cubic-bezier(.32,1.36,.53,1) both;
+}
+@keyframes slideInMenu {
+    from { transform: translateX(110%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+.admin-mobile-close {
+    background: none;
+    border: none;
+    font-size: 2.1rem;
+    color: #333;
+    position: absolute;
+    top: 1rem;
+    right: 1.1rem;
+    cursor: pointer;
+}
+.admin-mobile-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+.admin-mobile-link, .admin-logout-btn {
+    font-size: 1.07rem;
+    color: #2c3e50;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem 1.5rem;
+    border-radius: 999px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background 0.14s, color 0.14s;
+}
+.admin-mobile-link:hover, .admin-mobile-link:focus,
+.admin-logout-btn:hover, .admin-logout-btn:focus {
+    background: #ff6b35;
+    color: #fff;
+    outline: 2px solid #ff6b35;
+}
+
+/* --- Admin Dashboard --- */
+.dashboard-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.9rem;
+    gap: 1.3rem;
+    flex-wrap: wrap;
+}
+.dashboard-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #2c3e50;
+}
+.dashboard-add-btn {
+    background: #ff6b35;
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 1.08rem;
+    padding: 0.65em 1.8em;
+    cursor: pointer;
+    transition: background 0.13s;
+}
+.dashboard-add-btn:hover, .dashboard-add-btn:focus {
+    background: #e55a2b;
+    outline: 2px solid #ff6b35;
+}
+
+/* --- Dashboard: Search + Add Row Centered Modern --- */
+.dashboard-search-add-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.3rem;
+    margin-bottom: 2.2rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 18px rgba(44, 62, 80, 0.06);
+    padding: 1.1rem 1.5rem;
+}
+
+.dashboard-search-add-row .dashboard-search-input {
+    width: 300px;
+    max-width: 90vw;
+    border-radius: 50px;
+    border: 1.5px solid #ddd;
+    padding: 0.7em 1.25em;
+    font-size: 1.07rem;
+    background: #fafafc;
+    transition: border-color 0.14s;
+    font-family: var(--default-font, 'Roboto', sans-serif);
+}
+
+.dashboard-search-add-row .dashboard-search-input:focus {
+    border-color: #ff6b35;
+    outline: none;
+    background: #fff;
+}
+
+.dashboard-search-add-row .dashboard-add-btn {
+    background: #ff6b35;
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 1.08rem;
+    padding: 0.65em 2.2em;
+    cursor: pointer;
+    transition: background 0.13s, transform 0.13s;
+    font-family: var(--default-font, 'Roboto', sans-serif);
+    box-shadow: 0 2px 6px rgba(255, 107, 53, 0.05);
+    margin-left: 0;
+}
+
+.dashboard-search-add-row .dashboard-add-btn:hover,
+.dashboard-search-add-row .dashboard-add-btn:focus {
+    background: #ce1212;
+    outline: 2px solid #ff6b35;
+    transform: translateY(-1px) scale(1.04);
+}
+
+@media (max-width: 700px) {
+    .dashboard-search-add-row {
+        flex-direction: column;
+        gap: 0.7rem;
+        padding: 1.1rem 0.5rem;
+    }
+    .dashboard-search-add-row .dashboard-search-input {
+        width: 100%;
+        max-width: 98vw;
+    }
+    .dashboard-search-add-row .dashboard-add-btn {
+        width: 100%;
+        font-size: 1.07rem;
+        padding: 0.7em 0;
+    }
+}
+
+
+
+hboard-search-input {
+    width: 260px;
+    max-width: 90vw;
+    border-radius: 7px;
+    border: 1.2px solid #ccc;
+    padding: 0.59em 1em;
+    font-size: 1.07rem;
+    transition: border-color 0.13s;
+}
+.dashboard-search-input:focus {
+    border-color: #ff6b35;
+    outline: none;
+}
+.dashboard-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 2.3rem;
+    margin-top: 1.5rem;
+}
+.dashboard-card-wrapper {
+    position: relative;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 18px rgba(44,62,80,0.09);
+    overflow: visible;
+    padding-bottom: 0.8rem;
+}
+.dashboard-delete-btn {
+    position: absolute;
+    top: 0.5em;
+    right: 0.7em;
+    background: #fff3f1;
+    color: #e74c3c;
+    border: none;
+    border-radius: 50%;
+    font-size: 1.22rem;
+    cursor: pointer;
+    padding: 0.37em 0.7em;
+    box-shadow: 0 1px 6px rgba(44,62,80,0.06);
+    transition: background 0.13s, color 0.13s;
+}
+.dashboard-delete-btn:hover, .dashboard-delete-btn:focus {
+    background: #ffe7dd;
+    color: #fff;
+    outline: 2px solid #e74c3c;
+}
+.dashboard-empty {
+    color: #bbb;
+    text-align: center;
+    font-size: 1.13rem;
+    padding: 2.2em 0 2.5em;
+    width: 100%;
+}
+.dashboard-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+
+/* --- Admin Item Modal --- */
+.admin-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(40,42,54,0.18);
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.admin-modal {
+    background: #fff;
+    border-radius: 12px;
+    max-width: 400px;
+    width: 100%;
+    padding: 2rem 1.8rem 1.6rem;
+    box-shadow: 0 6px 32px rgba(44,62,80,0.16);
+    position: relative;
+    animation: slideInModal 0.16s cubic-bezier(.32,1.36,.53,1) both;
+}
+@keyframes slideInModal {
+    from { transform: translateY(60px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+.admin-modal-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 1.2rem;
+}
+.admin-modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+}
+.admin-modal-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+.admin-modal-field-checkboxes {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+}
+.admin-input,
+.admin-textarea {
+    border-radius: 6px;
+    border: 1.1px solid #ccc;
+    padding: 0.5em 0.85em;
+    font-size: 1rem;
+    background: #fff;
+    transition: border-color 0.13s;
+}
+.admin-input:focus,
+.admin-textarea:focus {
+    border-color: #ff6b35;
+    outline: none;
+}
+.admin-textarea {
+    min-height: 60px;
+    resize: vertical;
+}
+.admin-preview-img {
+    margin-top: 8px;
+    max-height: 80px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+.admin-field-error, .admin-general-error {
+    color: #e74c3c;
+    font-size: 0.97rem;
+    margin-top: 0.3rem;
+}
+.admin-general-error {
+    margin-bottom: 1.2rem;
+    text-align: center;
+}
+.admin-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 0.8rem;
+}
+.admin-cancel-btn, .admin-save-btn {
+    background: #f4f4f4;
+    border: none;
+    border-radius: 999px;
+    padding: 0.59em 1.55em;
+    font-weight: 600;
+    font-size: 1.02rem;
+    cursor: pointer;
+    transition: background 0.13s;
+}
+.admin-save-btn {
+    background: #ff6b35;
+    color: #fff;
+    margin-left: 0.7rem;
+}
+.admin-save-btn:hover, .admin-save-btn:focus {
+    background: #e55a2b;
+    outline: 2px solid #ff6b35;
+}
+.admin-cancel-btn:hover, .admin-cancel-btn:focus {
+    background: #eee;
+    outline: 2px solid #bbb;
+}
+
+/* --- Settings Form --- */
+.settings-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #2c3e50;
+    margin-bottom: 2rem;
+    text-align: center;
+    position: relative;
+}
+
+.settings-title::after {
+    content: '';
+    display: block;
+    width: 80px;
+    height: 4px;
+    background: #ff6b35;
+    margin: 0.8rem auto 0;
+    border-radius: 2px;
+}
+
+.settings-form {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 18px rgba(44, 62, 80, 0.09);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 1.05rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1.2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus {
+    border-color: #ff6b35;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2);
+}
+
+.input-error {
+    border-color: #e74c3c !important;
+    background-color: #fff4f2;
+}
+
+.field-error {
+    color: #e74c3c;
+    font-size: 0.95rem;
+    margin-top: 0.5rem;
+}
+
+.general-error {
+    color: #e74c3c;
+    background: #fff4f2;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-size: 1rem;
+}
+
+.button-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 2rem;
+}
+
+.save-button {
+    background: #ff6b35;
+    color: #fff;
+    border: none;
+    padding: 0.75rem 2.5rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.save-button:hover {
+    background: #e55a2b;
+    transform: translateY(-1px);
+}
+
+.save-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.dashboard-list {
+    list-style: none;
+    padding: 0;
+    margin: 1.5em 0 0 0;
+}
+.dashboard-list-item {
+    display: flex;
+    align-items: center;
+    gap: 1.5em;
+    border-bottom: 1px solid #eee;
+    padding: 1.25em 0;
+}
+.dashboard-list-info strong {
+    font-size: 1.05em;
+}
+.dashboard-list-cat {
+    font-size: 0.95em;
+    color: #888;
+    margin-left: 0.75em;
+}
+.dashboard-list-actions button {
+    margin-left: 0.5em;
+}
+.dashboard-edit-btn,
+.dashboard-delete-btn {
+    padding: 0.5em 1.25em;
+    border-radius: 5px;
+    border: none;
+    background: #f7f7f7;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.15s;
+}
+.dashboard-edit-btn:hover {
+    background: #e3f7e3;
+}
+.dashboard-delete-btn:hover {
+    background: #ffe3e3;
+}
+.ingredients-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.ingredients-label {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 1.05rem;
+}
+
+.ingredients-container {
+    max-height: 150px;
+    overflow-y: auto;
+    padding-right: 8px; /* to avoid scrollbar overlapping content */
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+}
+
+.ingredient-field {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.ingredient-field label {
+    min-width: 100px;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.admin-remove-ingredient-btn,
+.admin-add-ingredient-btn {
+    background: #ff6b35;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 0.4rem 0.8rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.15s, transform 0.15s;
+    font-size: 0.9rem;
+}
+
+.admin-remove-ingredient-btn:hover,
+.admin-remove-ingredient-btn:focus,
+.admin-add-ingredient-btn:hover,
+.admin-add-ingredient-btn:focus {
+    background: #e55a2b;
+    outline: none;
+    transform: scale(1.05);
+}
+
+.admin-preview-img {
+    margin-top: 8px;
+    max-height: 80px;
+    max-width: 100%;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}

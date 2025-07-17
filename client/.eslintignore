@@ -1,0 +1,15 @@
+# Ignore node_modules and build artifacts
+node_modules/
+build/
+dist/
+
+# Ignore all vendor libraries and minified files
+src/assets/vendor/
+src/assets/**/*.min.js
+
+# Ignore other common output folders
+coverage/
+public/
+
+# Optional: ignore generated files or test snapshots
+*.snap

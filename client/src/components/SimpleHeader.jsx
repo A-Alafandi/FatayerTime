@@ -1,25 +1,15 @@
-// src/components/SimpleHeader/SimpleHeader.jsx
-
 import React from 'react';
-import PropTypes from 'prop-types';
-import styles from './Header.module.css';
 
-function SimpleHeader({ title, subtitle, children }) {
-  return (
-      <header className={styles.header} role="banner">
-        <div className={styles.inner}>
-          <h1 className={styles.title}>{title}</h1>
-          {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
-          {children}
-        </div>
-      </header>
-  );
+export default function SimpleHeader({ title, subtitle, children }) {
+    return (
+        <header className="hero py-5 text-center bg-light">
+            <div className="container">
+                <h1 className="display-4 fw-bold" style={{ fontFamily: "'Amatic SC', cursive", color: '#ce1212', fontWeight: 700, letterSpacing: 2 }}>
+                    {title}
+                </h1>
+                {subtitle && <p className="lead text-muted mb-4">{subtitle}</p>}
+                {children}
+            </div>
+        </header>
+    );
 }
-
-SimpleHeader.propTypes = {
-  title: PropTypes.string.isRequired,
-  subtitle: PropTypes.string,
-  children: PropTypes.node,
-};
-
-export default React.memo(SimpleHeader);

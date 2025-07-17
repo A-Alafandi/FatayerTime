@@ -1,13 +1,10 @@
-// src/components/Confirmation/Confirmation.jsx
-
 import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-import styles from './Confirmation.module.css';
+import '../Main.css';
 
 function Confirmation({ open, title, message, confirmText = 'Yes', cancelText = 'No', onConfirm, onCancel }) {
     const dialogRef = useRef();
 
-    // Focus the confirm button on open
     useEffect(() => {
         if (open && dialogRef.current) {
             const btn = dialogRef.current.querySelector('button');
@@ -15,12 +12,11 @@ function Confirmation({ open, title, message, confirmText = 'Yes', cancelText = 
         }
     }, [open]);
 
-    // Keyboard: close on Escape, handle Enter/Space for confirm
     useEffect(() => {
         if (!open) return;
         function onKeyDown(e) {
             if (e.key === 'Escape') onCancel();
-            if ((e.key === 'Enter' || e.key === ' ') && document.activeElement === dialogRef.current.querySelector(`.${styles.confirmBtn}`)) {
+            if ((e.key === 'Enter' || e.key === ' ') && document.activeElement === dialogRef.current.querySelector('.confirm-btn')) {
                 e.preventDefault();
                 onConfirm();
             }
@@ -32,23 +28,15 @@ function Confirmation({ open, title, message, confirmText = 'Yes', cancelText = 
     if (!open) return null;
 
     return (
-        <div className={styles.backdrop} role="dialog" aria-modal="true" aria-labelledby="confirmation-title" ref={dialogRef}>
-            <div className={styles.dialog}>
-                <h2 id="confirmation-title" className={styles.title}>{title}</h2>
-                <div className={styles.message}>{message}</div>
-                <div className={styles.actions}>
-                    <button
-                        className={styles.confirmBtn}
-                        onClick={onConfirm}
-                        aria-label={confirmText}
-                    >
+        <div className="confirm-backdrop" role="dialog" aria-modal="true" aria-labelledby="confirmation-title" ref={dialogRef}>
+            <div className="confirm-dialog">
+                <h2 id="confirmation-title" className="confirm-title">{title}</h2>
+                <div className="confirm-message">{message}</div>
+                <div className="confirm-actions">
+                    <button className="confirm-btn" onClick={onConfirm} aria-label={confirmText}>
                         {confirmText}
                     </button>
-                    <button
-                        className={styles.cancelBtn}
-                        onClick={onCancel}
-                        aria-label={cancelText}
-                    >
+                    <button className="cancel-btn" onClick={onCancel} aria-label={cancelText}>
                         {cancelText}
                     </button>
                 </div>

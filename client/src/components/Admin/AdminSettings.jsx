@@ -1,8 +1,9 @@
 import React, { useState, useRef } from 'react';
-import styles from './AdminSettings.css'; // If you switch to a module, use .module.css
+import '../../styles/AdminPanel.css';
 import Spinner from '../spinner/Spinner';
-import Notification from '.././Notification';
-import { api } from '../../utils/auth';
+import Notification from '../Notification';
+import { apiFetch  } from '../../utils/auth';
+import AdminNavbar from "./AdminNavbar";
 
 function AdminSettings() {
     const [form, setForm] = useState({
@@ -50,7 +51,7 @@ function AdminSettings() {
         setLoading(true);
         setGeneralError('');
         try {
-            await api.put('/admin/update', {
+            await apiFetch.put('/api/admin/update', {
                 currentPassword: form.currentPassword,
                 newUsername: form.newUsername,
                 newPassword: form.newPassword ? form.newPassword : undefined,
@@ -69,10 +70,12 @@ function AdminSettings() {
     };
 
     return (
-        <div className={styles.settingsRoot || 'settings-root'}>
-            <h2 className={styles.settingsTitle || 'settings-title'}>Admin Settings</h2>
-            <form className={styles.settingsForm || 'settings-form'} onSubmit={handleSubmit} autoComplete="off" aria-labelledby="settings-title">
-                <div className={styles.formGroup || 'form-group'}>
+        <>
+        <AdminNavbar />
+        <div className="settings-root">
+            <h2 className="settings-title">Update Admin Credentials</h2>
+            <form className="settings-form" onSubmit={handleSubmit} autoComplete="off" aria-labelledby="settings-title">
+                <div className="form-group">
                     <label htmlFor="currentPassword">Current Password<span aria-hidden="true" style={{ color: '#ff6b35' }}>*</span></label>
                     <input
                         ref={usernameInput}
@@ -83,14 +86,14 @@ function AdminSettings() {
                         onChange={handleChange}
                         disabled={loading}
                         aria-required="true"
-                        className={errors.currentPassword ? (styles.inputError || 'input-error') : undefined}
+                        className={errors.currentPassword ? 'input-error' : ''}
                         autoComplete="current-password"
                     />
                     {errors.currentPassword && (
-                        <div className={styles.fieldError || 'field-error'} role="alert">{errors.currentPassword}</div>
+                        <div className="field-error" role="alert">{errors.currentPassword}</div>
                     )}
                 </div>
-                <div className={styles.formGroup || 'form-group'}>
+                <div className="form-group">
                     <label htmlFor="newUsername">New Username<span aria-hidden="true" style={{ color: '#ff6b35' }}>*</span></label>
                     <input
                         id="newUsername"
@@ -100,14 +103,14 @@ function AdminSettings() {
                         onChange={handleChange}
                         disabled={loading}
                         aria-required="true"
-                        className={errors.newUsername ? (styles.inputError || 'input-error') : undefined}
+                        className={errors.newUsername ? 'input-error' : ''}
                         autoComplete="username"
                     />
                     {errors.newUsername && (
-                        <div className={styles.fieldError || 'field-error'} role="alert">{errors.newUsername}</div>
+                        <div className="field-error" role="alert">{errors.newUsername}</div>
                     )}
                 </div>
-                <div className={styles.formGroup || 'form-group'}>
+                <div className="form-group">
                     <label htmlFor="newPassword">New Password <span style={{ color: '#6c757d', fontSize: '0.95em' }}>(optional)</span></label>
                     <input
                         id="newPassword"
@@ -118,13 +121,13 @@ function AdminSettings() {
                         disabled={loading}
                         aria-required="false"
                         autoComplete="new-password"
-                        className={errors.newPassword ? (styles.inputError || 'input-error') : undefined}
+                        className={errors.newPassword ? 'input-error' : ''}
                     />
                     {errors.newPassword && (
-                        <div className={styles.fieldError || 'field-error'} role="alert">{errors.newPassword}</div>
+                        <div className="field-error" role="alert">{errors.newPassword}</div>
                     )}
                 </div>
-                <div className={styles.formGroup || 'form-group'}>
+                <div className="form-group">
                     <label htmlFor="confirmPassword">Confirm Password</label>
                     <input
                         id="confirmPassword"
@@ -135,20 +138,20 @@ function AdminSettings() {
                         disabled={loading || !form.newPassword}
                         aria-required="false"
                         autoComplete="new-password"
-                        className={errors.confirmPassword ? (styles.inputError || 'input-error') : undefined}
+                        className={errors.confirmPassword ? 'input-error' : ''}
                     />
                     {errors.confirmPassword && (
-                        <div className={styles.fieldError || 'field-error'} role="alert">{errors.confirmPassword}</div>
+                        <div className="field-error" role="alert">{errors.confirmPassword}</div>
                     )}
                 </div>
                 {generalError && (
-                    <div className={styles.generalError || 'general-error'} role="alert">{generalError}</div>
+                    <div className="general-error" role="alert">{generalError}</div>
                 )}
-                <div className={styles.buttonRow || 'button-row'}>
+                <div className="button-row">
                     <button
                         type="submit"
                         disabled={loading}
-                        className={styles.saveButton || 'save-button'}
+                        className="save-button"
                     >
                         {loading ? <Spinner size="small" /> : 'Save Changes'}
                     </button>
@@ -162,6 +165,7 @@ function AdminSettings() {
                 />
             )}
         </div>
+        </>
     );
 }
 

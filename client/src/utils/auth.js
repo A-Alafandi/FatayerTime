@@ -1,274 +1,213 @@
-const TOKEN_KEY = 'ft_accessToken';
+// src/utils/auth.js
+const TOKEN_KEY = 'token';
+const ROLE_KEY = 'userRole';
+const USERNAME_KEY = 'username';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+
+// Check if localStorage is available
+const isLocalStorageAvailable = () => {
+    try {
+        const test = '__localStorage_test__';
+        localStorage.setItem(test, test);
+        localStorage.removeItem(test);
+        return true;
+    } catch {
+        return false;
+    }
+};
 
 /**
- * Retrieve access token from localStorage.
- * @returns {string|null}
+ * Retrieve the JWT token from localStorage.
  */
-export function getAccessToken() {
+export function getToken() {
+    if (!isLocalStorageAvailable()) return null;
     try {
         return localStorage.getItem(TOKEN_KEY);
-    } catch (err) {
-        console.error('[Auth] Unable to access localStorage:', err);
+    } catch (error) {
+        console.error('Error getting token from localStorage:', error);
         return null;
     }
 }
 
 /**
- * Store access token in localStorage.
- * @param {string} token
+ * Save the JWT token, role, and username to localStorage.
+ * @param {string} token - JWT token string.
+ * @param {string} role - User role.
+ * @param {string} username - User username.
  */
-export function setAccessToken(token) {
+export function setToken(token, role, username) {
+    if (!isLocalStorageAvailable()) {
+        console.warn('localStorage is not available');
+        return false;
+    }
     try {
         localStorage.setItem(TOKEN_KEY, token);
-    } catch (err) {
-        console.error('[Auth] Unable to set accessToken:', err);
+        localStorage.setItem(ROLE_KEY, role);
+        localStorage.setItem(USERNAME_KEY, username);
+        return true;
+    } catch (error) {
+        console.error('Error setting token in localStorage:', error);
+        return false;
     }
 }
 
 /**
- * Remove access token from localStorage.
+ * Remove the JWT token, role, and username from localStorage.
  */
-export function removeAccessToken() {
+export function removeToken() {
+    if (!isLocalStorageAvailable()) {
+        console.warn('localStorage is not available');
+        return false;
+    }
     try {
         localStorage.removeItem(TOKEN_KEY);
-    } catch (err) {
-        console.error('[Auth] Unable to remove accessToken:', err);
+        localStorage.removeItem(ROLE_KEY);
+        localStorage.removeItem(USERNAME_KEY);
+        return true;
+    } catch (error) {
+        console.error('Error removing token from localStorage:', error);
+        return false;
     }
 }
 
 /**
- * Optional: Decode JWT to get expiry (requires JWT in standard format)
- * @returns {number|null} expiry timestamp in seconds, or null if invalid
+ * Get current user role from localStorage.
+ * @returns {string|null}
  */
-export function getTokenExpiry() {
-    const token = getAccessToken();
-    if (!token) return null;
+export function getRole() {
+    if (!isLocalStorageAvailable()) return null;
     try {
-        const [, payload] = token.split('.');
-        if (!payload) return null;
-        const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
-        return decoded.exp || null;
-    } catch (err) {
-        console.error('[Auth] Error decoding token expiry:', err);
+        return localStorage.getItem(ROLE_KEY);
+    } catch (error) {
+        console.error('Error getting role from localStorage:', error);
         return null;
     }
 }
 
 /**
- * Optional: Check if token is expired
- * @returns {boolean}
+ * Get current username from localStorage.
+ * @returns {string|null}
  */
-export function isTokenExpired() {
-    const exp = getTokenExpiry();
-    if (!exp) return true;
-    return Date.now() / 1000 >= exp;
+export function getUsername() {
+    if (!isLocalStorageAvailable()) return null;
+    try {
+        return localStorage.getItem(USERNAME_KEY);
+    } catch (error) {
+        console.error('Error getting username from localStorage:', error);
+        return null;
+    }
 }
 
 /**
- * Check if token exists and is valid (not expired)
- * @returns {boolean}
+ * Check if the JWT token exists.
+ * @returns {boolean} True if token exists (simplified validation).
  */
 export function isTokenValid() {
-    const token = getAccessToken();
-    if (!token) return false;
-    return !isTokenExpired();
+    const token = getToken();
+    return !!token; // Simplified; add jwtDecode for expiration if needed
 }
 
 /**
- * API base URL - adjust this to match your backend
+ * Check if user is logged in (token exists).
+ * @returns {boolean}
  */
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+export function isLoggedIn() {
+    const token = getToken();
+    return !!token && isTokenValid();
+}
 
 /**
- * Create API instance with authentication headers (for admin functions)
+ * Perform a fetch request with optional authorization header.
+ * Prepends API_BASE_URL if `url` is relative.
+ * @param {string} url
+ * @param {object} options
+ * @param {boolean} requiresAuth
+ * @returns {Promise<any>} Parsed JSON response.
  */
-export const api = {
-    async get(endpoint) {
-        const token = getAccessToken();
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(token && { 'Authorization': `Bearer ${token}` })
-            }
-        });
+export async function apiFetch(url, options = {}, requiresAuth = false) {
+    const headers = options.headers ? { ...options.headers } : {};
+    const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
 
-        if (!response.ok) {
-            const error = await response.json().catch(() => ({ message: 'Network error' }));
-            throw new Error(error.message || `HTTP ${response.status}`);
+    if (requiresAuth) {
+        const token = getToken();
+        if (!token) {
+            throw new Error('No authentication token available');
         }
-
-        return response.json();
-    },
-
-    async post(endpoint, data) {
-        const token = getAccessToken();
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(token && { 'Authorization': `Bearer ${token}` })
-            },
-            body: JSON.stringify(data)
-        });
-
-        if (!response.ok) {
-            const error = await response.json().catch(() => ({ message: 'Network error' }));
-            throw new Error(error.message || `HTTP ${response.status}`);
-        }
-
-        return response.json();
-    },
-
-    async put(endpoint, data) {
-        const token = getAccessToken();
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(token && { 'Authorization': `Bearer ${token}` })
-            },
-            body: JSON.stringify(data)
-        });
-
-        if (!response.ok) {
-            const error = await response.json().catch(() => ({ message: 'Network error' }));
-            throw new Error(error.message || `HTTP ${response.status}`);
-        }
-
-        return response.json();
-    },
-
-    async delete(endpoint) {
-        const token = getAccessToken();
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(token && { 'Authorization': `Bearer ${token}` })
-            }
-        });
-
-        if (!response.ok) {
-            const error = await response.json().catch(() => ({ message: 'Network error' }));
-            throw new Error(error.message || `HTTP ${response.status}`);
-        }
-
-        return response.json();
+        headers['Authorization'] = `Bearer ${token}`;
     }
-};
 
-/**
- * Public API instance without authentication headers (for public endpoints)
- */
-export const publicApi = {
-    async get(endpoint) {
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!response.ok) {
-            const error = await response.json().catch(() => ({ message: 'Network error' }));
-            throw new Error(error.message || `HTTP ${response.status}`);
-        }
-
-        return response.json();
-    },
-
-    async post(endpoint, data) {
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
-
-        if (!response.ok) {
-            const error = await response.json().catch(() => ({ message: 'Network error' }));
-            throw new Error(error.message || `HTTP ${response.status}`);
-        }
-
-        return response.json();
-    },
-
-    async put(endpoint, data) {
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
-
-        if (!response.ok) {
-            const error = await response.json().catch(() => ({ message: 'Network error' }));
-            throw new Error(error.message || `HTTP ${response.status}`);
-        }
-
-        return response.json();
-    },
-
-    async delete(endpoint) {
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!response.ok) {
-            const error = await response.json().catch(() => ({ message: 'Network error' }));
-            throw new Error(error.message || `HTTP ${response.status}`);
-        }
-
-        return response.json();
-    }
-};
-
-
-
-/**
- * Login function
- * @param {string} username
- * @param {string} password
- * @returns {Promise<void>}
- */
-export async function login(username, password) {
     try {
-        const response = await fetch(`${API_BASE_URL}/admin/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username, password })
-        });
+        const response = await fetch(fullUrl, { ...options, headers });
+
+        if (response.status === 401 && requiresAuth) {
+            removeToken();
+            throw new Error('Authentication expired. Please login again.');
+        }
 
         if (!response.ok) {
-            const error = await response.json().catch(() => ({ message: 'Login failed' }));
-            throw new Error(error.message || 'Invalid credentials');
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `API request failed with status ${response.status}`);
         }
 
-        const data = await response.json();
-
-        if (data.token) {
-            setAccessToken(data.token);
-        } else {
-            throw new Error('No token received from server');
-        }
+        return await response.json();
     } catch (error) {
-        console.error('[Auth] Login error:', error);
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            throw new Error('Network error. Please check your connection.');
+        }
         throw error;
     }
 }
 
+// Convenience methods for HTTP requests
+apiFetch.get = (url, options = {}) => apiFetch(url, { ...options, method: 'GET' }, true);
+apiFetch.post = (url, data, options = {}) => apiFetch(url, {
+    ...options,
+    method: 'POST',
+    body: JSON.stringify(data),
+    headers: { 'Content-Type': 'application/json', ...options.headers }
+}, true);
+apiFetch.put = (url, data, options = {}) => apiFetch(url, {
+    ...options,
+    method: 'PUT',
+    body: JSON.stringify(data),
+    headers: { 'Content-Type': 'application/json', ...options.headers }
+}, true);
+apiFetch.delete = (url, options = {}) => apiFetch(url, { ...options, method: 'DELETE' }, true);
+
 /**
- * Logout function
- * @returns {void}
+ * Log in by saving the access token, role, and username.
+ * @param {string} accessToken
+ * @param {string} role
+ * @param {string} username
+ */
+export function login(accessToken, role, username) {
+    if (!accessToken) {
+        throw new Error('Access token is required');
+    }
+    const success = setToken(accessToken, role, username);
+    if (!success) {
+        throw new Error('Failed to save authentication token');
+    }
+}
+
+/**
+ * Log out by clearing the access token, role, and username.
  */
 export function logout() {
-    removeAccessToken();
+    removeToken();
 }
+
+const authModule = {
+    getToken,
+    setToken,
+    removeToken,
+    getRole,
+    getUsername,
+    isTokenValid,
+    isLoggedIn,
+    apiFetch,
+    login,
+    logout,
+};
+
+export default authModule;

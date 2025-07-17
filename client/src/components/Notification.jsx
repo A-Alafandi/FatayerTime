@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import styles from './Notification.module.css';
+import '../Main.css';
 
 const Notification = ({
                           message,
@@ -12,49 +12,41 @@ const Notification = ({
                       }) => {
     const [isExiting, setIsExiting] = useState(false);
 
+    // Move handleClose before useEffect, so it's safe to reference in deps
+    const handleClose = React.useCallback(() => {
+        setIsExiting(true);
+        setTimeout(onClose, 300);
+    }, [onClose]);
+
     useEffect(() => {
         if (!message) return;
-
         setIsExiting(false);
-
         if (autoDismiss) {
-            const timer = setTimeout(() => {
-                handleClose();
-            }, autoDismiss);
-
+            const timer = setTimeout(() => handleClose(), autoDismiss);
             return () => clearTimeout(timer);
         }
-    }, [message, autoDismiss]);
-
-    const handleClose = () => {
-        setIsExiting(true);
-        setTimeout(onClose, 300); // Match animation duration
-    };
+    }, [message, autoDismiss, handleClose]); // FIXED: include handleClose
 
     if (!message) return null;
 
     return (
         <div
-            className={`${styles.notification} ${styles[type]} ${styles[position]} ${isExiting ? styles.exiting : ''}`}
+            className={`notification ${type} ${position} ${isExiting ? 'exiting' : ''}`}
             role="alert"
             aria-live="assertive"
             aria-atomic="true"
         >
-            <div className={styles.content}>
-                <div className={styles.icon}>
+            <div className="content">
+                <div className="icon">
                     {type === 'success' && '✓'}
                     {type === 'error' && '⚠'}
                     {type === 'warning' && '⚠'}
                     {type === 'info' && 'i'}
                 </div>
-                <span className={styles.message}>{message}</span>
+                <span className="message">{message}</span>
             </div>
             {showCloseButton && (
-                <button
-                    className={styles.closeButton}
-                    onClick={handleClose}
-                    aria-label="Dismiss notification"
-                >
+                <button className="close-btn" onClick={handleClose} aria-label="Dismiss notification">
                     &times;
                 </button>
             )}

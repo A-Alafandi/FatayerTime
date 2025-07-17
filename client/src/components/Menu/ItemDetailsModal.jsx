@@ -1,94 +1,57 @@
-// src/components/ItemDetailsModal/ItemDetailsModal.jsx
-
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
-import styles from './MenuPage.module.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import '../../Main.css';
 
-const fallbackImg = '/images/fallback-food.jpg';
+const fallbackImg = '/assets/img/menu/fallback-food.jpg';
 
 function ItemDetailsModal({ item, onClose }) {
-    const [imgError, setImgError] = useState(false);
-    const modalRef = useRef();
-
-    // Accessibility: Trap focus and close on Escape
     useEffect(() => {
         function onKeyDown(e) {
             if (e.key === 'Escape') onClose();
-            if (e.key === 'Tab' && modalRef.current) {
-                const focusable = modalRef.current.querySelectorAll(
-                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-                );
-                if (!focusable.length) return;
-                const first = focusable[0];
-                const last = focusable[focusable.length - 1];
-                if (e.shiftKey && document.activeElement === first) {
-                    e.preventDefault();
-                    last.focus();
-                } else if (!e.shiftKey && document.activeElement === last) {
-                    e.preventDefault();
-                    first.focus();
-                }
-            }
         }
         document.addEventListener('keydown', onKeyDown);
         return () => document.removeEventListener('keydown', onKeyDown);
     }, [onClose]);
 
-    // Click outside closes modal
-    function handleBackdropClick(e) {
-        if (e.target === e.currentTarget) onClose();
-    }
-
     if (!item) return null;
 
+    let ingredientsDisplay = null;
+    if (Array.isArray(item.ingredients) && item.ingredients.length > 0) {
+        ingredientsDisplay = item.ingredients.join(', ');
+    } else if (typeof item.ingredients === 'string' && item.ingredients.trim() !== '') {
+        ingredientsDisplay = item.ingredients;
+    }
+
     return (
-        <div
-            className={styles.modalBackdrop}
-            tabIndex={-1}
-            aria-modal="true"
-            role="dialog"
-            onClick={handleBackdropClick}
-            ref={modalRef}
-        >
-            <div className={styles.modal}>
-                <button
-                    className={styles.closeButton}
-                    aria-label="Close details"
-                    onClick={onClose}
-                    autoFocus
-                >
-                    ×
-                </button>
-                <h2 className={styles.title}>{item.name}</h2>
-                <div className={styles.content}>
-                    <div className={styles.imageBlock}>
-                        <img
-                            src={imgError || !item.imageUrl ? fallbackImg : item.imageUrl}
-                            alt={item.name}
-                            onError={() => setImgError(true)}
-                            className={styles.image}
-                        />
-                        <div className={styles.badges}>
-                            {item.vegetarian && <span className={`${styles.badge} ${styles.veg}`} aria-label="Vegetarian">🥗</span>}
-                            {item.spicy && <span className={`${styles.badge} ${styles.spicy}`} aria-label="Spicy">🌶️</span>}
-                            {item.popular && <span className={`${styles.badge} ${styles.popular}`} aria-label="Popular">★</span>}
+        <div className="modal show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
+            <div className="modal-dialog modal-lg" role="document">
+                <div className="modal-content">
+                    <button type="button" className="btn-close position-absolute top-0 end-0 m-3" aria-label="Close" onClick={onClose}></button>
+                    <div className="modal-body row">
+                        <div className="col-md-5 d-flex align-items-center">
+                            <img
+                                src={item.imageUrl || fallbackImg}
+                                alt={item.name}
+                                className="img-fluid rounded shadow"
+                                style={{ width: '100%' }}
+                                onError={e => { e.target.src = fallbackImg; }}
+                            />
                         </div>
-                    </div>
-                    <div className={styles.info}>
-                        <div className={styles.label}>Category:</div>
-                        <div className={styles.value}>{item.category}</div>
-                        <div className={styles.label}>Description:</div>
-                        <div className={styles.value}>{item.description}</div>
-                        {item.ingredients && item.ingredients.length > 0 && (
-                            <>
-                                <div className={styles.label}>Ingredients:</div>
-                                <div className={styles.value}>
-                                    {item.ingredients.join(', ')}
-                                </div>
-                            </>
-                        )}
-                        <div className={styles.label}>Price:</div>
-                        <div className={styles.price}>€{item.price?.toFixed(2) ?? '-'}</div>
+                        <div className="col-md-7">
+                            <h2 className="mb-2" style={{ color: '#ce1212' }}>{item.name}</h2>
+                            <div className="mb-3">
+                                {item.vegetarian && <span className="badge bg-success me-1">🥗 Vegetarian</span>}
+                                {item.spicy && <span className="badge bg-danger me-1">🌶️ Spicy</span>}
+                                {item.popular && <span className="badge bg-warning text-dark">★ Popular</span>}
+                            </div>
+                            <div className="mb-2"><strong>Category:</strong> {item.category || '-'}</div>
+                            <div className="mb-2"><strong>Description:</strong> {item.description || '-'}</div>
+                            {ingredientsDisplay && (
+                                <div className="mb-2"><strong>Ingredients:</strong> {ingredientsDisplay}</div>
+                            )}
+                            <div className="mb-2"><strong>Price:</strong> €{typeof item.price === 'number' ? item.price.toFixed(2) : '-'}</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -97,17 +60,7 @@ function ItemDetailsModal({ item, onClose }) {
 }
 
 ItemDetailsModal.propTypes = {
-    item: PropTypes.shape({
-        name: PropTypes.string.isRequired,
-        category: PropTypes.string,
-        description: PropTypes.string,
-        price: PropTypes.number,
-        imageUrl: PropTypes.string,
-        vegetarian: PropTypes.bool,
-        spicy: PropTypes.bool,
-        popular: PropTypes.bool,
-        ingredients: PropTypes.array,
-    }),
+    item: PropTypes.object,
     onClose: PropTypes.func.isRequired,
 };
 

@@ -1,23 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import styles from './AdminNavbar.module.css'; // <-- Use CSS module
-import logo from '../../assets/logo.png'; // Adjust path as needed
+import { NavLink, useNavigate } from 'react-router-dom';
+import '../../styles/AdminPanel.css';
+import { logout } from '../../utils/auth';
+import logo from '../../assets/img/logo.svg';
 
 function AdminNavbar() {
     const [mobileOpen, setMobileOpen] = useState(false);
     const menuRef = useRef();
     const navigate = useNavigate();
 
-    // Trap focus in mobile nav and close on Escape/click outside
     useEffect(() => {
         if (!mobileOpen) return;
 
         function onKeyDown(e) {
             if (e.key === 'Escape') setMobileOpen(false);
-            // Trap focus
             if (e.key === 'Tab') {
                 const focusable = menuRef.current.querySelectorAll(
-                    'a,button,[tabindex]:not([tabindex="-1"])'
+                    'a, button, [tabindex]:not([tabindex="-1"])'
                 );
                 const first = focusable[0];
                 const last = focusable[focusable.length - 1];
@@ -31,11 +30,13 @@ function AdminNavbar() {
                 }
             }
         }
+
         function onClick(e) {
             if (menuRef.current && !menuRef.current.contains(e.target)) {
                 setMobileOpen(false);
             }
         }
+
         document.addEventListener('keydown', onKeyDown);
         document.addEventListener('mousedown', onClick);
         return () => {
@@ -45,44 +46,42 @@ function AdminNavbar() {
     }, [mobileOpen]);
 
     const handleLogout = () => {
-        localStorage.removeItem('accessToken');
-        // Optional: clear HttpOnly cookies here if used
-        navigate('/admin/login');
-        // Optionally: trigger notification to say "Logged out"
+        logout(); // using the centralized logout
+        navigate('/admin-login');
     };
 
-    // Example links for your admin dashboard
     const links = [
-        { to: '/admin/dashboard', label: 'Dashboard' },
+        { to: '/admin', label: 'Dashboard' }, // corrected route
         { to: '/admin/settings', label: 'Settings' },
     ];
 
     return (
-        <nav className={styles.navbar} aria-label="Admin main navigation">
-            <div className={styles.navbarContainer}>
-                <Link to="/admin/dashboard" className={styles.logoLink}>
-                    <img src={logo} alt="Fatayer Time Logo" className={styles.logoImg} />
-                    <span className={styles.logoText}>Admin</span>
-                </Link>
+        <nav className="admin-navbar" aria-label="Admin main navigation">
+            <div className="admin-navbar-container">
+                <NavLink to="/admin" className="admin-logo-link">
+                    <img src={logo} alt="Fatayer Time Logo" className="admin-logo-img" />
+                    <span className="admin-logo-text">Admin</span>
+                </NavLink>
 
-                {/* Desktop menu */}
-                <ul className={styles.links} role="menubar">
+                <ul className="admin-links" role="menubar">
                     {links.map(link => (
                         <li key={link.to} role="none">
-                            <Link
+                            <NavLink
                                 to={link.to}
-                                className={styles.link}
+                                className={({ isActive }) =>
+                                    `admin-link ${isActive ? 'active-link' : ''}`
+                                }
                                 role="menuitem"
                                 tabIndex={0}
                             >
                                 {link.label}
-                            </Link>
+                            </NavLink>
                         </li>
                     ))}
                     <li>
                         <button
                             onClick={handleLogout}
-                            className={styles.logoutButton}
+                            className="admin-logout-btn"
                             aria-label="Log out"
                         >
                             Log out
@@ -90,40 +89,40 @@ function AdminNavbar() {
                     </li>
                 </ul>
 
-                {/* Hamburger (mobile) */}
                 <button
-                    className={styles.mobileToggle}
-                    aria-label="Open navigation menu"
+                    className="admin-mobile-toggle"
+                    aria-label="Toggle navigation menu"
                     aria-expanded={mobileOpen}
-                    onClick={() => setMobileOpen(true)}
+                    onClick={() => setMobileOpen(prev => !prev)}
                 >
-                    <span className={styles.hamburgerIcon}>☰</span>
+                    <span className="admin-hamburger-icon">☰</span>
                 </button>
             </div>
 
-            {/* Mobile menu */}
             {mobileOpen && (
-                <div className={styles.mobileMenuBackdrop} aria-modal="true" role="dialog">
-                    <div className={styles.mobileMenu} ref={menuRef}>
+                <div className="admin-mobile-menu-backdrop" aria-modal="true" role="dialog">
+                    <div className="admin-mobile-menu" ref={menuRef}>
                         <button
                             onClick={() => setMobileOpen(false)}
-                            className={styles.mobileClose}
+                            className="admin-mobile-close"
                             aria-label="Close navigation menu"
                         >
                             ×
                         </button>
-                        <ul className={styles.mobileLinks} role="menubar">
+                        <ul className="admin-mobile-links" role="menubar">
                             {links.map(link => (
                                 <li key={link.to} role="none">
-                                    <Link
+                                    <NavLink
                                         to={link.to}
-                                        className={styles.mobileLink}
+                                        className={({ isActive }) =>
+                                            `admin-mobile-link ${isActive ? 'active-link' : ''}`
+                                        }
                                         role="menuitem"
                                         tabIndex={0}
                                         onClick={() => setMobileOpen(false)}
                                     >
                                         {link.label}
-                                    </Link>
+                                    </NavLink>
                                 </li>
                             ))}
                             <li>
@@ -132,7 +131,7 @@ function AdminNavbar() {
                                         setMobileOpen(false);
                                         handleLogout();
                                     }}
-                                    className={styles.logoutButton}
+                                    className="admin-logout-btn"
                                     aria-label="Log out"
                                 >
                                     Log out
