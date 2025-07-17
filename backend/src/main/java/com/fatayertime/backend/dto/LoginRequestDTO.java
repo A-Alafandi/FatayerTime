@@ -1,7 +1,5 @@
 package com.fatayertime.backend.dto;
 
-
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 

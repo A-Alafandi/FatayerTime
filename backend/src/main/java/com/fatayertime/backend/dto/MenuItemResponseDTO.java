@@ -4,18 +4,23 @@ import lombok.*;
 
 import java.util.UUID;
 
-@Getter @Setter
+import lombok.*;
+import java.util.List;
+import java.util.UUID;
+
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class MenuItemResponseDTO {
-
     private UUID id;
     private String name;
+    private String category;
     private String description;
     private Double price;
-    private String category;
     private String imageUrl;
-    private String ingredients;
-    private boolean isVegetarian;
+    private Boolean isVegetarian;
+    private Boolean isSpicy;
+    private List<String> ingredients;
 }

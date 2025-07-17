@@ -1,33 +1,37 @@
 package com.fatayertime.backend.dto;
 
-import jakarta.validation.constraints.*;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
 
-@Getter @Setter
+import lombok.*;
+import java.util.List;
+
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class MenuItemRequestDTO {
-
-    @NotBlank
+    @NotBlank(message = "Name is mandatory")
     private String name;
 
-    @NotBlank
-    @Size(max = 512)
-    private String description;
-
-    @NotNull
-    @DecimalMin("0.0")
-    private Double price;
-
-    @NotBlank
+    @NotBlank(message = "Category is mandatory")
     private String category;
 
-    @NotBlank
+    private String description;
+
+    @NotNull(message = "Price is mandatory")
+    @PositiveOrZero(message = "Price must be zero or positive")
+    private Double price;
+
     private String imageUrl;
 
-    @NotBlank
-    private String ingredients;
+    private Boolean isVegetarian;
 
-    private boolean isVegetarian;
+    private Boolean isSpicy;
+
+    private List<@NotBlank(message = "Ingredient cannot be blank") String> ingredients;
 }

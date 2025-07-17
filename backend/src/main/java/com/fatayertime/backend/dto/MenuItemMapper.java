@@ -1,33 +1,20 @@
 package com.fatayertime.backend.dto;
 
 import com.fatayertime.backend.model.MenuItem;
+import org.mapstruct.Mapper;
+import org.mapstruct.factory.Mappers;
+import java.util.List;
 
-public class MenuItemMapper {
+@Mapper(componentModel = "spring")
+public interface MenuItemMapper {
+    MenuItemMapper INSTANCE = Mappers.getMapper(MenuItemMapper.class);
 
-    public static MenuItemResponseDTO toDto(MenuItem entity) {
-        if (entity == null) return null;
-        return MenuItemResponseDTO.builder()
-                .id(entity.getId())
-                .name(entity.getName())
-                .description(entity.getDescription())
-                .price(entity.getPrice().doubleValue())
-                .category(entity.getCategory())
-                .imageUrl(entity.getImageUrl())
-                .ingredients(entity.getIngredients())
-                .isVegetarian(entity.isVegetarian())
-                .build();
-    }
+    // Map from DTO (request) to entity
+    MenuItem toEntity(MenuItemRequestDTO dto);
 
-    public static MenuItem toEntity(MenuItemRequestDTO dto) {
-        if (dto == null) return null;
-        return MenuItem.builder()
-                .name(dto.getName())
-                .description(dto.getDescription())
-                .price(java.math.BigDecimal.valueOf(dto.getPrice()))
-                .category(dto.getCategory())
-                .imageUrl(dto.getImageUrl())
-                .ingredients(dto.getIngredients())
-                .isVegetarian(dto.isVegetarian())
-                .build();
-    }
+    // Map from entity to DTO (response)
+    MenuItemResponseDTO toResponseDto(MenuItem entity);
+
+    // Map list of entities to list of response DTOs
+    List<MenuItemResponseDTO> toResponseDtoList(List<MenuItem> entities);
 }

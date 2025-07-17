@@ -5,63 +5,59 @@ import com.fatayertime.backend.dto.MenuItemResponseDTO;
 import com.fatayertime.backend.dto.MenuItemMapper;
 import com.fatayertime.backend.model.MenuItem;
 import com.fatayertime.backend.repository.MenuItemRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.fatayertime.backend.service.MenuItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class MenuItemServiceImpl implements MenuItemService {
 
     private final MenuItemRepository menuItemRepository;
+    private final MenuItemMapper menuItemMapper;
 
     @Override
-    public List<MenuItemResponseDTO> getAll() {
-        return menuItemRepository.findAll().stream()
-                .map(MenuItemMapper::toDto)
-                .collect(Collectors.toList());
+    public MenuItemResponseDTO createMenuItem(MenuItemRequestDTO dto) {
+        MenuItem menuItem = menuItemMapper.toEntity(dto);
+        MenuItem saved = menuItemRepository.save(menuItem);
+        return menuItemMapper.toResponseDto(saved);
     }
 
     @Override
-    public MenuItemResponseDTO getById(UUID id) {
-        MenuItem menuItem = menuItemRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Menu item not found"));
-        return MenuItemMapper.toDto(menuItem);
+    public MenuItemResponseDTO updateMenuItem(UUID id, MenuItemRequestDTO dto) {
+        MenuItem existing = menuItemRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Menu item not found"));
+        // MapStruct won't update existing, so do it manually or with your own logic:
+        existing.setName(dto.getName());
+        existing.setCategory(dto.getCategory());
+        existing.setDescription(dto.getDescription());
+        existing.setPrice(dto.getPrice());
+        existing.setImageUrl(dto.getImageUrl());
+        existing.setIsVegetarian(dto.getIsVegetarian());
+        existing.setIsSpicy(dto.getIsSpicy());
+        existing.setIngredients(dto.getIngredients());
+        MenuItem saved = menuItemRepository.save(existing);
+        return menuItemMapper.toResponseDto(saved);
     }
 
     @Override
-    public List<MenuItemResponseDTO> getVegetarian() {
-        return menuItemRepository.findByIsVegetarianTrue().stream()
-                .map(MenuItemMapper::toDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public MenuItemResponseDTO create(MenuItemRequestDTO request) {
-        MenuItem saved = menuItemRepository.save(MenuItemMapper.toEntity(request));
-        return MenuItemMapper.toDto(saved);
-    }
-
-    @Override
-    public MenuItemResponseDTO update(UUID id, MenuItemRequestDTO request) {
-        if (!menuItemRepository.existsById(id)) {
-            throw new EntityNotFoundException("Menu item not found");
-        }
-        MenuItem entity = MenuItemMapper.toEntity(request);
-        entity.setId(id);
-        MenuItem saved = menuItemRepository.save(entity);
-        return MenuItemMapper.toDto(saved);
-    }
-
-    @Override
-    public void delete(UUID id) {
-        if (!menuItemRepository.existsById(id)) {
-            throw new EntityNotFoundException("Menu item not found");
-        }
+    public void deleteMenuItem(UUID id) {
         menuItemRepository.deleteById(id);
+    }
+
+    @Override
+    public MenuItemResponseDTO getMenuItemById(UUID id) {
+        MenuItem item = menuItemRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Menu item not found"));
+        return menuItemMapper.toResponseDto(item);
+    }
+
+    @Override
+    public List<MenuItemResponseDTO> getAllMenuItems() {
+        List<MenuItem> items = menuItemRepository.findAll();
+        return menuItemMapper.toResponseDtoList(items);
     }
 }

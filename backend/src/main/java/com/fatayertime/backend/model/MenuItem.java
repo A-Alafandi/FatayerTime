@@ -1,49 +1,43 @@
 package com.fatayertime.backend.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
 import lombok.*;
-
-import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
-@Entity
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Entity
+@Table(name = "menu_item")
 public class MenuItem {
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @NotBlank
-    @Column(nullable = false)
     private String name;
 
-    @NotBlank
-    @Size(max = 512)
-    @Column(nullable = false)
-    private String description;
-
-    @NotNull
-    @DecimalMin("0.0")
-    @Column(nullable = false)
-    private BigDecimal price;
-
-    @NotBlank
-    @Column(nullable = false)
     private String category;
 
-    @NotBlank
-    @Column(nullable = false)
+    @Column(length = 5000) // or even @Lob if needed
+    private String description;
+
+    private Double price;
+
+    @Column(length = 1000)
     private String imageUrl;
 
-    @NotBlank
-    @Column(nullable = false)
-    private String ingredients;
+    private Boolean isVegetarian;
 
-    @Column(nullable = false)
-    private boolean isVegetarian;
+    private Boolean isSpicy;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "menu_item_ingredients",
+            joinColumns = @JoinColumn(name = "menu_item_id")
+    )
+    @Column(name = "ingredient")
+    private List<String> ingredients;
 }
