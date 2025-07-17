@@ -1,43 +1,29 @@
 import React from 'react';
-import HeaderHero from './HeaderHero';
 import About from './About';
 import Services from './Services';
-import MenuPage from './Menu/MenuPage';
-import OpeningHours from './OpeningHours';
+import Gallery from './Gallery';
+import Testimonials from './Testimonials';
 import Contact from './Contact';
 import Footer from './Footer';
+import ScrollTopButton from './ScrollTopButton';
+import '../Main.css';
+import Hero from "./Hero";
 
 function HomePage() {
     return (
-        <>
-            {/* Skip link for accessibility */}
-            <a href="#main-content" className="skip-link">Skip to main content</a>
-
-            {/* Header & Hero Section */}
-            <HeaderHero />
-
-            <main id="main-content">
-                {/* About Section */}
-                <About />
-
-                {/* Services Section */}
-                <Services />
-
-                {/* Menu Section */}
-                <section id="menu-section" aria-labelledby="menu-section-title">
-                    <h2 id="menu-section-title" className="visually-hidden">Menu</h2>
-                    <MenuPage />
-                </section>
-
-                {/* Opening Hours Section */}
-                <OpeningHours />
-
-                {/* Contact Section */}
-                <Contact />
+        <div>
+            <Hero />
+            <main>
+                <About data-aos="fade-up" />
+                <Services data-aos="fade-up" />
+                <Gallery />         {/* Instagram food gallery, with lightbox */}
+                <Testimonials />    {/* Customer reviews, Bootstrap carousel */}
+                {/*<OpeningHours data-aos="fade-up" />*/}
+                <Contact data-aos="fade-up" />
             </main>
-
             <Footer />
-        </>
+            <ScrollTopButton />
+        </div>
     );
 }
 

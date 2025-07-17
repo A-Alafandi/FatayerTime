@@ -2,7 +2,7 @@ package com.fatayertime.backend.service;
 
 import com.fatayertime.backend.model.AppUser;
 import com.fatayertime.backend.repository.UserRepository;
-import com.fatayertime.backend.request.AdminUpdateRequest;
+import com.fatayertime.backend.dto.AdminUpdateRequestDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -13,7 +13,7 @@ public class UserService {
     private final UserRepository userRepo;
     private final PasswordEncoder passwordEncoder;
 
-    public void updateAdminAccount(AdminUpdateRequest request, String username) {
+    public void updateAdminAccount(AdminUpdateRequestDTO request, String username) {
         AppUser admin = userRepo.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
